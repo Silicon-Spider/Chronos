@@ -1,0 +1,267 @@
+# Chronos provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
+#   source: oracles/gate.toml
+#   commit: c8a9c490bfde650466609531f8083d69513c6036
+#   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
+#   state:  unchanged: below this header the file is byte for byte the source
+# How the gate runs. Pins live in oracles.lock.toml; this file holds policy.
+schema = 1
+
+[observe]
+# Legal actions are counted up to this cap; a count equal to the cap means "at
+# least this many". It is part of every golden file's signature, so changing it
+# means re-recording them.
+cap = 1000
+
+[engine]
+# argv of the engine-under-test adapter: a command that reads a 5dpgn record on
+# stdin and writes the observation protocol on stdout (oracles/README.md,
+# "The engine contract"). The harness appends `--cap N` and runs it from the
+# repository root. The adapter is the engine's, and lives with it: a command that
+# names anything inside oracles/ is refused.
+#
+# The engine's adapter is t5d-gate (engine/tools/t5d_gate.cpp; engine/README.md,
+# "The gate adapter"), built by `python engine/build.py` into build/engine/ - build
+# it before a gate run, and again after any change to the engine, as both CI
+# workflows do: the gate runs whatever build it finds there, and its report names
+# the file and its SHA-256. It runs in full mode with the engine's default rules,
+# and never with a diagnostic option (engine/README.md lists them: for
+# investigating a record by hand, never for this file). The path is relative, and
+# no absolute path belongs here: the harness takes a relative program from the
+# repository root on every platform, wherever it was started (Windows adds the
+# .exe), so the file `verify` checks is the file that runs. Emptied, no engine is
+# compared against the oracles and the proof channel stays disabled (H23);
+# configured, it stays disabled until a complete run of the release tier says
+# otherwise and the channel is signed off (H23, H41).
+command = ["./build/engine/t5d-gate"]
+# The engine's wall clock per record, in every tier - the tier's own timeout_s
+# where that is longer. A record the engine has not finished by then fails it, so
+# this is how slow the engine may be, never what the gate compares: unlike a
+# tier's budgets, it decides nothing a tier requires of an oracle (H32), and the
+# golden files do not depend on it. Its slowest record, cwmtt/many2, took 44 s on
+# a CI runner that ran the calibration probe at 0.75x the recording machine's
+# time (2026-10-17, run 39009070712); the runners range from about 0.6x to 1.1x,
+# and on the slower ones the commit tier's own 60 s would not be enough.
+timeout_s = 300
+# "full": the engine answers every question at every position.
+# "parse": the harness appends `--parse-only` after `--cap N`; the engine says what
+# it set up, whose move it is and how it replayed the record, and answers none of
+# check, counts and mate. The gate compares those and gates nothing; the proof
+# channel stays disabled.
+mode = "full"
+
+# --- Tiers (design spec 11.0) -------------------------------------------------
+# sources       which oracle searches run
+# record_tiers  which corpus records run (each record names its cheapest tier)
+# timeout_s     wall clock per (source, record): what arrived before the deadline
+#               is kept, the rest is unknown at that budget
+# mate_budget_ms  Chess in 5D's mate search, per position
+# min_checked   for the engine: a ruleset is gated only if, for each of check,
+#               count and mate, the oracles give a verdict at no less than this
+#               share of the positions the engine reports in it. No oracle reads
+#               every record, so the share is below 1; the gate prints the
+#               numbers it found. It can never be 0: a ruleset whose only oracle
+#               has no check verdict must not come out "gated".
+#
+# There is no coverage floor (H32). A tier requires 100% of its required set -
+# every recorded value whose recorded cost x [stability] margin fits the tier's
+# budget for that source - and a run that loses one of them fails, by name. The
+# recorded values outside the set are reported as counts, "unknown at budget X".
+# What each tier requires of each source is a table in DISAGREEMENTS.md, rendered
+# from these budgets and the cost files: change a budget and `verify` fails until
+# `golden --render` writes the table again - its diff is the change in what the
+# gate checks, reviewed as such.
+
+# "notation" is the notation repository's parser, a parse-only oracle: it says
+# what position it read at every ply and how far it read, and answers no rules
+# question. It is fast and deterministic, so every tier runs it.
+#
+# The commit tier is a smoke test (H47): it does not run every oracle search over
+# every record tier, so it gates no ruleset - and with one rules oracle it could
+# gate none anyway: a ruleset is gated only when two or more oracles answer for
+# each of its records (CHECKPOINT 8). The gate's output says that the tier gates
+# nothing. Only a tier that runs every oracle search over every record tier
+# (nightly, release) gates a ruleset, and fails an engine with no finding against
+# it that comes through none. In every tier the engine fails on an unexplained
+# divergence, a telltale, a breach of the engine contract, a record it read on the
+# last green run and now declines ([baseline], below), or on reading none.
+[tier.commit]
+sources = ["ftxi", "notation"]
+record_tiers = ["commit"]
+timeout_s = 60
+min_checked = 0.75
+
+# The naive searches are exhaustive and run out of time on wide positions; that
+# is expected, which is why their budgets are lower: what they cannot reach in
+# time (with the margin) is outside the required set, and is counted as unknown
+# at that budget. A contradiction fails the gate whatever the budget.
+[tier.nightly]
+sources = ["ftxi", "ftxi:naive", "cwmtt", "cwmtt:naive", "chessin5d", "notation"]
+record_tiers = ["commit", "nightly"]
+timeout_s = 300
+mate_budget_ms = 20000
+min_checked = 0.75
+
+[tier.nightly.source_timeout_s]
+"ftxi:naive" = 120
+"cwmtt:naive" = 120
+# cwmtt's hypercuboid search needs a minute and a half on its widest record on a
+# fast desktop; a CI runner is several times slower.
+cwmtt = 900
+chessin5d = 600
+
+# Before any generator release or proof-channel enablement. Fails unless an
+# engine was compared and came through at least one named variant (custom
+# positions are evidence about no variant). Only a tier that runs every source
+# over every record tier may require an engine - this file is refused otherwise,
+# since any other tier gates nothing (H47) - and only a tier that requires an
+# engine can enable the proof channel; it runs every search to its budget (no run
+# is stopped early). The golden files are recorded under these budgets
+# ([stability] recording_tier): a change here marks them stale.
+[tier.release]
+sources = ["ftxi", "ftxi:naive", "cwmtt", "cwmtt:naive", "chessin5d", "notation"]
+record_tiers = ["commit", "nightly"]
+timeout_s = 600
+mate_budget_ms = 60000
+min_checked = 0.75
+require_engine = true
+
+[tier.release.source_timeout_s]
+"ftxi:naive" = 300
+"cwmtt:naive" = 300
+cwmtt = 1200
+chessin5d = 900
+
+# --- Stable answers (H32) -----------------------------------------------------
+[stability]
+# The golden files are recorded under this tier's budgets (golden --write, which
+# records every source twice, the fewest independent recordings verify accepts).
+recording_tier = "release"
+# A recorded value is required in a tier when its recorded cost - when it arrived,
+# from the start of its run, the most over the recordings - times this margin fits
+# the tier's budget for that source (and, for a Chess in 5D mate verdict, when its
+# mate search's cost times the margin fits the tier's mate budget). At least 1, so
+# no tier can require what its own deadline cut on the recording machine. 4 to
+# start: the first CI run (2026-10-01, ubuntu-24.04) reproduced 95.9% and 98.4% of
+# the two naive searches' recorded values at the 120 s nightly budget, against
+# 99.1% and 99.3% on the recording desktop. Revisit it with the calibration
+# probe's figures from CI (each gate report records them).
+margin = 4
+# For the tier that can enable the proof channel: the least share its required
+# set must hold of what each source would have recorded but for its recording
+# budget - its stable values, the values behind its horizons (counted from the
+# length of a complete replay of the record), those a limit left unknown and the
+# unstable ones - beside every terminal verdict it recorded, or another source
+# recorded where its recording was cut, which it must hold without exception. A
+# run of that tier fails below it, and `verify` reports it: a source listed in
+# that tier but starved of time - a low budget, or a recording made on a loaded
+# machine - moves values behind horizons, where they still count against it.
+# Reviewed 2026-10-01 against a two-recording measurement on the recording
+# desktop: the release tier required 84.9% of what ftxi:naive would record and
+# 77.3% of cwmtt:naive's, all of every other source's, and cut off 5 and 8 final
+# verdicts of theirs - the proof channel cannot be enabled at these budgets.
+proof_share = 0.9
+
+# The calibration probe: a fixed, deterministic workload timed at the start of
+# every gate run and by golden --write (whose time on the recording machine is
+# committed, golden/calibration.json), so that a slow runner's failure can say
+# how much slower than the recording machine it is. About 12 s on the recording
+# desktop. Changing it means re-recording (golden --write).
+[calibration]
+source = "ftxi:naive"
+record = "cwmtt/manyChecks"
+positions = 38
+
+# --- The rulebook (H38) -------------------------------------------------------
+# When the engine and an oracle disagree, the rulebook decides, and every known
+# divergence cites it. It is pinned: `sha256` is the SHA-256 of its text (CRLF
+# folded to LF), and `verify` - so every gate tier - fails once the file no
+# longer matches it. A change to the rulebook is a reviewed change: read it,
+# re-check every known divergence that cites it, update this pin with
+# `python oracles/harness.py rulebook --pin`, and re-run the gate. The pin lives
+# here, with the gate's policy, rather than in golden/MANIFEST, which every
+# `golden --write` rewrites - re-recording the oracles must never re-pin the
+# rulebook as a side effect, and the recorded answers do not depend on it.
+[rulebook]
+path = "docs/rules/README.md"
+sha256 = "ab01119ebdfa2612e38df10860a916e15b4227c9966f3c4018aac552049c2261"
+
+# --- The engine's baseline (H47) ----------------------------------------------
+# The commit tier fails an engine that declines a record it read on the last
+# green run, or that reads none (CHECKPOINT 8). The last green run is on record in
+# oracles/engine-baseline.json: for each record of this tier, how the engine's
+# replay of it ended and how many positions it reported, on a complete run of the
+# tier that passed. Every tier compares the engine with it, over the records it
+# holds that the run runs (oracle_harness/baseline.py says what counts as
+# declining). It is a recorded answer (H33): written only by
+# `python oracles/harness.py baseline --write`, which runs this tier in full and
+# records the engine's reads only if the run is green - never by a gate run, never
+# by hand - and pinned here, as the rulebook is: `sha256` is the SHA-256 of its
+# text (CRLF folded to LF), written by the same command, and every read of the
+# file verifies it first, `baseline --write`'s read of the one it replaces
+# included. Here and not in golden/MANIFEST, which every `golden --write`
+# rewrites: re-recording the oracles must never re-pin it. A re-recording is
+# reviewed as a diff, one line per record; the command lists what the new
+# baseline no longer holds - a loss of checking, never churn, and never recorded
+# to make a gate run pass. Like MANIFEST, the pin guards against accident, not a
+# deliberate edit of the file and its pin together: that is review's job.
+[baseline]
+tier = "commit"
+sha256 = "ad689cf3be80b7cddf9b0e1b5b264edbd6cae875823db55120eebaaf9b3f06e0"
+
+# --- Boundary -----------------------------------------------------------------
+# Every file outside oracles/ is checked. These lists sort the files into kinds,
+# and the kind decides what is looked for (the rules are listed at the top of
+# oracle_harness/boundary.py). Patterns match the repository-relative path or the
+# file name, ignoring case; "*" also matches "/". A file that matches none is
+# source code.
+
+[boundary]
+# Prose. May cite the harness and the oracles freely; only copied code is looked for.
+documentation = [
+    "*.md", "*.rst", "*.adoc", "*.bib", "CITATION.cff",
+    "README*", "CHANGELOG*", "LICENSE*", "COPYING*", "NOTICE*", "AUTHORS*",
+    "docs/design/*.md",
+]
+# Repository and tool configuration, which has to name the harness (CI runs it,
+# git pins it). May not fetch or name an oracle's repository or package, nor hold
+# copied code. Git's own files are not checked at all.
+plumbing = [
+    ".gitmodules", ".gitignore", ".gitattributes", ".ignore", ".mailmap",
+    ".github/*", ".claude/*", ".vscode/*", ".idea/*", ".mcp.json",
+    ".editorconfig", "CODEOWNERS", ".*ignore", ".pre-commit-config.yaml",
+]
+# Build files and scripts. Here an oracle's package name is a dependency wherever
+# it appears, and the harness directory may not be listed, except under a key
+# that excludes it. A recipe file (Makefile, justfile, package.json, tox.ini) may
+# run the gate's entry point, oracles/harness.py.
+manifests = [
+    "Cargo.toml", "Cargo.lock", "build.rs", "rust-toolchain.toml",
+    "pyproject.toml", "setup.py", "setup.cfg", "requirements*.txt", "constraints*.txt", "Pipfile", "Pipfile.lock",
+    "poetry.lock", "uv.lock", "tox.ini", "noxfile.py", "pytest.ini", "environment.yml", "environment.yaml",
+    "package.json", "package-lock.json", "pnpm-workspace.yaml", "yarn.lock", "deno.json", "deno.jsonc",
+    "*.config.js", "*.config.cjs", "*.config.mjs", "*.config.ts", "*.config.cts", "*.config.mts",
+    "CMakeLists.txt", "*.cmake", "Makefile", "GNUmakefile", "*.mk", "meson.build", "justfile",
+    "SConstruct", "SConscript", "xmake.lua", "premake5.lua", "vcpkg.json", "conanfile.txt", "conanfile.py",
+    "*.cabal", "stack.yaml", "package.yaml", "cabal.project",
+    "BUILD", "BUILD.bazel", "WORKSPACE", "*.bzl", "go.mod", "go.work", "*.nix",
+    "*.gradle", "*.gradle.kts", "pom.xml", "*.csproj", "*.vcxproj", "*.sln", "Gemfile", "*.gemspec",
+    "Dockerfile*", "*.dockerfile", "Containerfile",
+    "*.sh", "*.bash", "*.zsh", "*.ps1", "*.psm1", "*.bat", "*.cmd",
+]
+# No file outside the harness may share this many consecutive logic lines (each
+# at least copy_min_line_chars long, a run of white space counting as one) with
+# an oracle's source - nor a single logic line of at least copy_long_line_chars
+# (white space not counted), which is how a data table gets copied. Lines are
+# compared with white space dropped and quotes unified.
+copy_window_lines = 6
+copy_min_line_chars = 12
+copy_long_line_chars = 160
+
+# A reviewed exception, if one is ever needed. A waiver excuses one rule in one
+# file, wherever the offending text - the path, name or import the rule found -
+# contains `text`; a waiver that no longer excuses anything fails the check.
+# [[boundary.waiver]]
+# path = "tools/prepush.py"
+# rule = "references-harness"
+# text = "oracles/harness.py"
+# reason = "a developer script that runs the gate; it reads nothing the gate produces"

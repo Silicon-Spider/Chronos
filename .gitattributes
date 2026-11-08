@@ -1,0 +1,12 @@
+# One line-ending convention on every platform. The copied oracle harness pins
+# files by hash, so a checkout on Windows must give the same bytes as one on Linux.
+# The rules follow Temporal-5D's .gitattributes at the pinned commit (PROVENANCE.md).
+* text=auto eol=lf
+
+# The harness's own game records are pinned by the hash of their raw bytes
+# (oracles/corpus/manifest.toml): git hands them back exactly as committed.
+oracles/corpus/records/** -text
+
+# The copied game database is pinned by the hash of its bytes (data/t0database/).
+data/t0database/Data.csv -text
+data/t0database/LICENSE -text

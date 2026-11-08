@@ -1,0 +1,11 @@
+# CMake build trees. build/engine holds t5d-gate, the adapter the harness runs.
+/build/
+
+# The oracle harness's toolchains, oracle builds and run reports
+# (python oracles/harness.py build); regenerable, never committed.
+/oracles/.cache/
+__pycache__/
+*.pyc
+
+# Agent worktrees (Claude Code): never part of the tree.
+/.claude/worktrees/
