@@ -13,4 +13,5 @@ Chronos is a standalone, CPU-only engine for 5D Chess With Multiverse Time Trave
 - Don't change a committed decision without a written proposal in a gate report. Don't edit `docs/SPEC.md` or `docs/DECISIONS.md`.
 - Record gate results in `docs/gates/`, measurements in `docs/MEASUREMENTS.md` and nets in `NETS.md`.
 - Git: one branch per phase, a pull request into `main` at each gate, never force-push `main`, and keep data and nets out of git.
+- Compute: the desktop by default and always for training. GitHub Actions runs CI and adds spare capacity for test matches and self-play shards, within GitHub's terms; every Actions job also runs locally.
 - Build: CMake and Ninja, C++20, g++ 13+ or clang; Windows through MSYS2 ucrt64.

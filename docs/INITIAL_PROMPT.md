@@ -20,7 +20,7 @@ Read these in full first: CLAUDE.md, docs/BUILD_PROMPT.md, docs/SPEC.md (§0, §
 
 4. Make the one allowed change: remove capi's transformer entry points, t5d_game_expand, t5d_game_apply_expanded and t5d_game_square_labels, along with t5d_expand_options, t5d_label_options, t5d_square_labels and the records.h types only they use. Change nothing else.
 
-5. Build with CMake and Ninja (C++20). Add GitHub Actions CI that builds and runs the tests on Linux (g++ and clang) and Windows (MSYS2 ucrt64) on every push.
+5. Build with CMake and Ninja (C++20). Add GitHub Actions CI that builds and runs the tests on Linux (g++ and clang) and Windows (MSYS2 ucrt64) on every push. Keep Actions to CI for now; the match and self-play workflows come in Phases 2 and 3 (BUILD_PROMPT.md, Compute).
 
 6. Run the copied tests and the gate unchanged. Record pass and fail counts per suite. Record failures without fixing them, and list any oracle checks skipped because the oracle engine isn't installed.
 
