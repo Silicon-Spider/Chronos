@@ -33,7 +33,16 @@ The spec lists the modules, the 64 test files, the harness, the rulebook and t0d
 
 ## Changes since the copy
 
-None yet.
+One change, the one spec §3.4 allows before G0: remove capi's transformer entry points and the record types only they use. Each file's header now says it changed. The table gives the SHA-256 of the bytes below each header now.
+
+| File | Change | SHA-256 now, below the header |
+| --- | --- | --- |
+| `engine/include/t5d/capi.h` | Removes `t5d_game_expand`, `t5d_game_apply_expanded` and `t5d_game_square_labels`; the structs `t5d_expand_options`, `t5d_expansion`, `t5d_label_options` and `t5d_square_labels`; and the macros only they use (`T5D_FEATURES_*`, `T5D_RELATIONS_*`, `T5D_NO_WINDOW`, `T5D_SQUARE_LABEL_COUNT`, `T5D_LABEL_*`). 191 lines removed. | `4d76ed10eab476d99532e3c931f4074e4da156f375f3e9e8a8e3e596ce4f59e3` |
+| `engine/include/t5d/records.h` | Removes the relation ids `T5D_RELATION_*`, which only `T5D_RELATIONS_*` and `t5d_expansion` used. Keeps `t5d_move` and its `T5D_MOVE_*` flags, which `t5d_game_apply` takes. 15 lines removed. | `2699a3a6f959b566a28ec9a71cff020b65715319263a3fb1d518a13899f185e0` |
+| `engine/src/capi.cpp` | Removes the three entry points' definitions; the helpers only they use (`expand_options_from`, `describe`, and `capi_internal::describe_expansion` and `expand_options`); their `t5d_layout` rows; the includes of `t5d/expand.hpp` and `t5d/labels.hpp`; and the game handle's `expansion` and `labels` members. 231 lines removed. | `11647d4e1aaaf713fcfc775dbd32ffe6bfe0f5bc0838cd436690e71d0cee3b34` |
+| `engine/src/capi_internal.hpp` | Removes the include of `t5d/expand.hpp` and the declarations of `describe_expansion` and `expand_options`. 7 lines removed. | `58ee346ff7921482d9313eb5a180f798ed2e51157d961a8f1dd73650d11790ef` |
+
+Kept on purpose, so that no retained function changes: the game handle's `expansion_current` flag and the three writes to it in `t5d_game_apply` (through `apply_to`), `t5d_game_replay_next` and `t5d_game_submit`. Nothing reads it any more. Comments that still mention the expansion are left as they were; `docs/gates/G0.md` lists them.
 
 ## Licences
 

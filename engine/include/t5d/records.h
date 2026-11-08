@@ -2,7 +2,7 @@
 //   source: engine/include/t5d/records.h
 //   commit: c8a9c490bfde650466609531f8083d69513c6036
 //   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
-//   state:  unchanged: below this header the file is byte for byte the source
+//   state:  changed: capi's transformer entry points removed (spec 3.4 step 2); see PROVENANCE.md
 /* t5d/records.h - the plain-C records and ids of an expansion (t5d/expand.hpp),
  * shared by the C++ core and the C API (t5d/capi.h): the C API hands out the
  * expansion's own arrays, so the two must agree on these types exactly.
@@ -39,21 +39,6 @@
 #define T5D_MOVE_PROMOTION 32u  /* the pawn or brawn becomes `promotion` (S8) */
 #define T5D_MOVE_TRAVEL 64u     /* cross-board: the destination board is not the source board
                                    (E(k) is the travel moves' destinations outside W(k)) */
-
-/* ---- relation ids -----------------------------------------------------------
- * python/t5d/net/state.py RELATION_TYPES, in its order: "move" is the move
- * graph (register B9), the rest are the typed relations of design spec §6 -
- * register B11's five (provisional): attack, defence, pin, x-ray, check. Id 6
- * is reserved: never emitted, refused if asked for (append-only ids). */
-
-#define T5D_RELATION_MOVE 0
-#define T5D_RELATION_ATTACK 1
-#define T5D_RELATION_DEFENCE 2
-#define T5D_RELATION_PIN 3
-#define T5D_RELATION_XRAY 4
-#define T5D_RELATION_CHECK 5
-#define T5D_RELATION_RESERVED 6 /* never emitted (once travel-threat: folded into attack at
-                                   CHECKPOINT 6, B11) */
 
 /* ---- one pseudo-legal move ---------------------------------------------------
  * 32 bytes, no padding. Boards are indices into the expansion's boards (its

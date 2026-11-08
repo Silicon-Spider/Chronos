@@ -2,7 +2,7 @@
 //   source: engine/src/capi.cpp
 //   commit: c8a9c490bfde650466609531f8083d69513c6036
 //   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
-//   state:  unchanged: below this header the file is byte for byte the source
+//   state:  changed: capi's transformer entry points removed (spec 3.4 step 2); see PROVENANCE.md
 // The C API (t5d/capi.h): a thin layer over the C++ core that catches every
 // exception at the boundary and reports it as a status and a message.
 
@@ -22,10 +22,8 @@
 #include <vector>
 
 #include "t5d/error.hpp"
-#include "t5d/expand.hpp"
 #include "t5d/fen.hpp"
 #include "t5d/fingerprint.hpp"
-#include "t5d/labels.hpp"
 #include "t5d/movegen.hpp"
 #include "t5d/multiverse.hpp"
 #include "t5d/pgn.hpp"
@@ -66,10 +64,7 @@ struct t5d_game {
   std::optional<t5d::PgnReplay> replay;
   bool on_record = false;
   // The last expansion, and whether it is of the current state.
-  t5d::Expansion expansion;
   bool expansion_current = false;
-  // The last per-square labels (t5d_game_square_labels).
-  t5d::SquareLabels labels;
 };
 
 namespace {
@@ -218,97 +213,6 @@ t5d::BoardSize size_from(int32_t width, int32_t height,
   return size;
 }
 
-t5d::ExpandOptions expand_options_from(const t5d_expand_options* o) {
-  t5d::ExpandOptions options;
-  if (o == nullptr) return options;
-  if (o->window_k < 0) {
-    throw std::invalid_argument("window_k must be 0 or more, not " + std::to_string(o->window_k));
-  }
-  options.window_k = o->window_k;
-  switch (o->square_features) {
-    case T5D_FEATURES_ALL: options.square_features = t5d::SquareFeatures::All; break;
-    case T5D_FEATURES_SCOPE: options.square_features = t5d::SquareFeatures::Scope; break;
-    case T5D_FEATURES_NONE: options.square_features = t5d::SquareFeatures::None; break;
-    default:
-      throw std::invalid_argument("square_features must be T5D_FEATURES_ALL, _SCOPE or _NONE, "
-                                  "not " + std::to_string(o->square_features));
-  }
-  constexpr uint32_t kReserved = 1u << T5D_RELATION_RESERVED;
-  constexpr uint32_t kKnown = (1u << T5D_RELATION_MOVE) | T5D_RELATIONS_ATTACK |
-                              T5D_RELATIONS_DEFENCE | T5D_RELATIONS_PIN | T5D_RELATIONS_XRAY |
-                              T5D_RELATIONS_CHECK | kReserved;
-  if ((o->relations & ~kKnown) != 0) {
-    throw std::invalid_argument("relations: unknown bits " +
-                                std::to_string(o->relations & ~kKnown));
-  }
-  if ((o->relations & kReserved) != 0) {
-    throw NotImplemented(
-        "relations: id 6 is reserved and never built (register B11: travel-threat, once a "
-        "sixth type, was folded into attack at CHECKPOINT 6 - a travel threat is a "
-        "cross-board attack)");
-  }
-  options.attack = (o->relations & T5D_RELATIONS_ATTACK) != 0;
-  options.defence = (o->relations & T5D_RELATIONS_DEFENCE) != 0;
-  options.pin = (o->relations & T5D_RELATIONS_PIN) != 0;
-  options.xray = (o->relations & T5D_RELATIONS_XRAY) != 0;
-  options.check = (o->relations & T5D_RELATIONS_CHECK) != 0;
-  // Engine ABI round 2 (I15): the search leaves' legal-moves filter.
-  if (o->legal_moves != 0 && o->legal_moves != 1) {
-    throw std::invalid_argument("legal_moves must be 0 or 1, not " + std::to_string(o->legal_moves));
-  }
-  options.legal_moves = o->legal_moves == 1;
-  if (options.legal_moves) options.legality = t5d::LegalityOptions::budgeted(o->legality_checks, o->legality_nodes);
-  return options;
-}
-
-void describe(const t5d::Expansion& x, t5d_expansion& out) {
-  out.width = x.board_size().width;
-  out.height = x.board_size().height;
-  out.even = x.even() ? 1 : 0;
-  out.to_move = t5d::index_of(x.to_move());
-  out.present = x.present();
-  out.timelines = x.timeline_count();
-  out.active_timelines = x.active_timeline_count();
-  out.window_k = x.window_k();
-  out.may_move = x.may_move() ? 1 : 0;
-  out.origins_unknown = x.origins_unknown();
-  out.board_count = x.board_count();
-  out.move_count = x.move_records().size();
-  out.edge_count = x.move_edge_count();
-  out.relation_count = x.relation_count();
-  out.window_count = x.window().size();
-  out.e_count = x.e_boards().size();
-  out.src_extra_count = x.src_extra().size();
-  out.feature_board_count = x.feature_boards().size();
-  out.origin_count = x.origin_count();
-  out.timeline = x.board_timelines().data();
-  out.half_turn = x.board_half_turns().data();
-  out.is_head = x.board_is_head().data();
-  out.active = x.board_active().data();
-  out.side_to_move = x.board_side_to_move().data();
-  out.playable = x.board_playable().data();
-  out.window_depth = x.window_depth().data();
-  out.band_depth = x.band_depth().data();
-  out.is_origin = x.board_is_origin().data();
-  out.parent = x.board_parent().data();
-  out.feature_boards = x.feature_boards().data();
-  out.piece = x.square_pieces().data();
-  out.colour = x.square_colours().data();
-  out.moved = x.square_moved().data();
-  out.moves = x.move_records().data();
-  out.edges = x.move_edges().data();
-  out.relations = x.relations().data();
-  out.window = x.window().data();
-  out.e_boards = x.e_boards().data();
-  out.src_extra = x.src_extra().data();
-  out.acting_player = t5d::index_of(x.acting_player());
-  out.submit_possible = x.submit_possible() ? 1 : 0;
-  out.submit_legal = x.submit_legal() ? 1 : 0;
-  out.mandatory_remaining = x.mandatory_remaining();
-  out.optional_playable = x.optional_playable();
-  out.moves_made = x.moves_made();
-}
-
 bool submittable(t5d::SubmitStatus s) noexcept {
   return s == t5d::SubmitStatus::Unchecked || s == t5d::SubmitStatus::Safe;
 }
@@ -368,14 +272,6 @@ constexpr LayoutEntry kLayout[] = {
     T5D_AT(t5d_move, promotion),
     T5D_AT(t5d_move, flags),
 
-    T5D_SIZE(t5d_expand_options),
-    T5D_AT(t5d_expand_options, window_k),
-    T5D_AT(t5d_expand_options, square_features),
-    T5D_AT(t5d_expand_options, relations),
-    T5D_AT(t5d_expand_options, legal_moves),
-    T5D_AT(t5d_expand_options, legality_checks),
-    T5D_AT(t5d_expand_options, legality_nodes),
-
     T5D_SIZE(t5d_game_summary),
     T5D_AT(t5d_game_summary, boards),
     T5D_AT(t5d_game_summary, width),
@@ -391,70 +287,6 @@ constexpr LayoutEntry kLayout[] = {
     T5D_AT(t5d_game_summary, ruleset),
     T5D_AT(t5d_game_summary, rules),
     T5D_AT(t5d_game_summary, moves_made),
-
-    T5D_SIZE(t5d_expansion),
-    T5D_AT(t5d_expansion, width),
-    T5D_AT(t5d_expansion, height),
-    T5D_AT(t5d_expansion, even),
-    T5D_AT(t5d_expansion, to_move),
-    T5D_AT(t5d_expansion, present),
-    T5D_AT(t5d_expansion, timelines),
-    T5D_AT(t5d_expansion, active_timelines),
-    T5D_AT(t5d_expansion, window_k),
-    T5D_AT(t5d_expansion, may_move),
-    T5D_AT(t5d_expansion, origins_unknown),
-    T5D_AT(t5d_expansion, board_count),
-    T5D_AT(t5d_expansion, move_count),
-    T5D_AT(t5d_expansion, edge_count),
-    T5D_AT(t5d_expansion, relation_count),
-    T5D_AT(t5d_expansion, window_count),
-    T5D_AT(t5d_expansion, e_count),
-    T5D_AT(t5d_expansion, src_extra_count),
-    T5D_AT(t5d_expansion, feature_board_count),
-    T5D_AT(t5d_expansion, origin_count),
-    T5D_AT(t5d_expansion, timeline),
-    T5D_AT(t5d_expansion, half_turn),
-    T5D_AT(t5d_expansion, is_head),
-    T5D_AT(t5d_expansion, active),
-    T5D_AT(t5d_expansion, side_to_move),
-    T5D_AT(t5d_expansion, playable),
-    T5D_AT(t5d_expansion, window_depth),
-    T5D_AT(t5d_expansion, band_depth),
-    T5D_AT(t5d_expansion, is_origin),
-    T5D_AT(t5d_expansion, parent),
-    T5D_AT(t5d_expansion, feature_boards),
-    T5D_AT(t5d_expansion, piece),
-    T5D_AT(t5d_expansion, colour),
-    T5D_AT(t5d_expansion, moved),
-    T5D_AT(t5d_expansion, moves),
-    T5D_AT(t5d_expansion, edges),
-    T5D_AT(t5d_expansion, relations),
-    T5D_AT(t5d_expansion, window),
-    T5D_AT(t5d_expansion, e_boards),
-    T5D_AT(t5d_expansion, src_extra),
-    T5D_AT(t5d_expansion, acting_player),
-    T5D_AT(t5d_expansion, submit_possible),
-    T5D_AT(t5d_expansion, submit_legal),
-    T5D_AT(t5d_expansion, mandatory_remaining),
-    T5D_AT(t5d_expansion, optional_playable),
-    T5D_AT(t5d_expansion, moves_made),
-
-    T5D_SIZE(t5d_label_options),
-    T5D_AT(t5d_label_options, mate_nodes),
-
-    T5D_SIZE(t5d_square_labels),
-    T5D_AT(t5d_square_labels, board_count),
-    T5D_AT(t5d_square_labels, width),
-    T5D_AT(t5d_square_labels, height),
-    T5D_AT(t5d_square_labels, label_count),
-    T5D_AT(t5d_square_labels, acting_player),
-    T5D_AT(t5d_square_labels, labels),
-    T5D_AT(t5d_square_labels, mate_candidates),
-    T5D_AT(t5d_square_labels, mate_unknown),
-    T5D_AT(t5d_square_labels, first_moves_ours),
-    T5D_AT(t5d_square_labels, first_moves_theirs),
-    T5D_AT(t5d_square_labels, second_moves_ours),
-    T5D_AT(t5d_square_labels, second_moves_theirs),
 };
 
 #undef T5D_AT
@@ -774,24 +606,6 @@ t5d_status t5d_game_apply(t5d_game* game, const t5d_move* move, char** error) {
   });
 }
 
-t5d_status t5d_game_apply_expanded(t5d_game* game, size_t index, char** error) {
-  return guarded(error, [&]() -> t5d_status {
-    if (game == nullptr) throw std::invalid_argument("game is NULL");
-    if (!game->expansion_current) {
-      throw std::invalid_argument("the handle's last expansion is not of its current state: "
-                                  "call t5d_game_expand first");
-    }
-    const t5d::MoveList& moves = game->expansion.moves();
-    if (index >= moves.size()) {
-      throw std::invalid_argument("move index " + std::to_string(index) + " of " +
-                                  std::to_string(moves.size()));
-    }
-    const t5d::Move m = moves[index];  // the expansion's buffers are reused by the next one
-    apply_to(*game, m);
-    return T5D_OK;
-  });
-}
-
 t5d_status t5d_game_submit(t5d_game* game, char** error) {
   return guarded(error, [&]() -> t5d_status {
     if (game == nullptr) throw std::invalid_argument("game is NULL");
@@ -823,43 +637,6 @@ t5d_status t5d_game_set_legality(t5d_game* game, int32_t legality, char** error)
   });
 }
 
-t5d_status t5d_game_expand(t5d_game* game, const t5d_expand_options* options, t5d_expansion* out,
-                           char** error) {
-  return guarded(error, [&]() -> t5d_status {
-    if (game == nullptr || out == nullptr) throw std::invalid_argument("game or out is NULL");
-    const t5d::ExpandOptions o = expand_options_from(options);
-    game->expansion_current = false;
-    t5d::expand(game->state, o, game->expansion, game->moves_in_action);
-    game->expansion_current = true;
-    describe(game->expansion, *out);
-    return T5D_OK;
-  });
-}
-
-t5d_status t5d_game_square_labels(t5d_game* game, const t5d_label_options* options,
-                                  t5d_square_labels* out, char** error) {
-  return guarded(error, [&]() -> t5d_status {
-    if (game == nullptr || out == nullptr) throw std::invalid_argument("game or out is NULL");
-    t5d::SquareLabelOptions o;
-    if (options != nullptr) o.mate_budget = t5d::SearchBudget::nodes(options->mate_nodes);
-    t5d::square_labels(game->state, o, game->labels);
-    const t5d::SquareLabels& l = game->labels;
-    out->board_count = l.board_count;
-    out->width = l.size.width;
-    out->height = l.size.height;
-    out->label_count = t5d::kSquareLabelCount;
-    out->acting_player = t5d::index_of(l.acting_player);
-    out->labels = l.labels.data();
-    out->mate_candidates = l.stats.mate_candidates;
-    out->mate_unknown = l.stats.mate_unknown;
-    out->first_moves_ours = l.stats.first_moves[0];
-    out->first_moves_theirs = l.stats.first_moves[1];
-    out->second_moves_ours = l.stats.second_moves[0];
-    out->second_moves_theirs = l.stats.second_moves[1];
-    return T5D_OK;
-  });
-}
-
 t5d_status t5d_game_state(const t5d_game* game, t5d_state** out) {
   if (out == nullptr) return T5D_ERR_ARGUMENT;
   *out = nullptr;
@@ -881,14 +658,6 @@ int game_moves_in_action(const t5d_game& game) noexcept { return game.moves_in_a
 t5d_game* new_game(const GameState& state, int moves_in_action) {
   if (moves_in_action < 0) throw std::invalid_argument("a game's moves in its action must be 0 or more");
   return new t5d_game(state, moves_in_action);
-}
-void describe_expansion(const Expansion& expansion, t5d_expansion& out) { ::describe(expansion, out); }
-ExpandOptions expand_options(const t5d_expand_options* options) {
-  try {
-    return ::expand_options_from(options);
-  } catch (const ::NotImplemented& e) {
-    throw Unsupported(e.what());
-  }
 }
 
 }  // namespace t5d::capi_internal

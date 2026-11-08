@@ -2,7 +2,7 @@
 //   source: engine/include/t5d/capi.h
 //   commit: c8a9c490bfde650466609531f8083d69513c6036
 //   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
-//   state:  unchanged: below this header the file is byte for byte the source
+//   state:  changed: capi's transformer entry points removed (spec 3.4 step 2); see PROVENANCE.md
 /* t5d/capi.h - the rules engine's C API (the t5d shared library).
  *
  * For callers outside C++ - Python's ctypes first. Conventions:
@@ -216,46 +216,6 @@ typedef struct t5d_game t5d_game;
  * caller that asked for moves after the shift still gets them. */
 #define T5D_RULES_MOVES_AFTER_SHIFT UINT64_C(0)
 
-/* Which boards get per-square features (t5d_expand_options.square_features). */
-#define T5D_FEATURES_ALL 0   /* every board: the full-history input */
-#define T5D_FEATURES_SCOPE 1 /* W(k), E(k) and src_extra(k): the windowed input */
-#define T5D_FEATURES_NONE 2
-
-/* Bits of t5d_expand_options.relations: 1 << relation id (t5d/records.h) -
- * register B11's five types (t5d/expand.hpp, (e)). The move graph is always
- * made; T5D_RELATION_RESERVED (6) is refused (T5D_ERR_UNSUPPORTED). Pin and
- * check (engine ABI round 3) read both sides, each from its own view - the
- * opponent's the multiverse check status passes (R1) - and make the expansion
- * allocate. */
-#define T5D_RELATIONS_ATTACK (1u << T5D_RELATION_ATTACK)
-#define T5D_RELATIONS_DEFENCE (1u << T5D_RELATION_DEFENCE)
-#define T5D_RELATIONS_PIN (1u << T5D_RELATION_PIN)
-#define T5D_RELATIONS_XRAY (1u << T5D_RELATION_XRAY)
-#define T5D_RELATIONS_CHECK (1u << T5D_RELATION_CHECK)
-
-/* window_depth and band_depth of a board in no window. */
-#define T5D_NO_WINDOW INT32_MAX
-
-typedef struct t5d_expand_options {
-  int32_t window_k;        /* k of W(k), E(k), src_extra(k): half-turns, >= 0 (default 8);
-                              any k at least a timeline's length takes its whole band */
-  int32_t square_features; /* T5D_FEATURES_* (default ALL) */
-  uint32_t relations;      /* T5D_RELATIONS_* bits: the typed relations - provisional, B11
-                              (default 0: none) */
-  /* appended in engine ABI round 2 (register I15): the legal-moves filter of the search's
-     leaves, for t5d_game_expand - so that a record's network input (its candidate moves)
-     can be rebuilt exactly. A search refuses it in t5d_search_params.expand (its own
-     legal_moves_only and legality_checks/_nodes decide its leaves). */
-  int32_t legal_moves;      /* 1: the moves after which the action can still be finished
-                               legally (C4, R1), classified by E5a's tiers under the budget
-                               below - a move proved illegal dropped, an unknown one kept;
-                               0 (default): the pseudo-legal moves */
-  uint64_t legality_checks; /* the classification's budget, as t5d_search_params':
-                               checks ... */
-  uint64_t legality_nodes;  /* ... and search nodes (T5D_NO_LIMIT both: exact; read only
-                               with legal_moves) */
-} t5d_expand_options;
-
 typedef struct t5d_game_summary {
   uint64_t boards;
   int32_t width;
@@ -277,91 +237,6 @@ typedef struct t5d_game_summary {
                                per t5d_game_apply or _apply_expanded, 0 again after
                                t5d_game_submit and t5d_game_replay_next */
 } t5d_game_summary;
-
-/* The arrays of one expansion: every pointer stays valid until the next
- * t5d_game_expand, t5d_game_apply, t5d_game_apply_expanded, t5d_game_submit,
- * t5d_game_replay_next or t5d_game_destroy on the same handle. Boards are
- * indices in the canonical order (ascending timeline, then half-turn); cells
- * are rank * width + file (t5d/records.h). Board sets are ascending. W(k) is
- * every active timeline's band - its head and the k boards behind it - and
- * branch origin; E(k) the boards outside W(k) that a travel move (destination
- * board != source board) lands on. */
-typedef struct t5d_expansion {
-  int32_t width;
-  int32_t height;
-  int32_t even;
-  int32_t to_move;
-  int32_t present;
-  int32_t timelines;
-  int32_t active_timelines;
-  int32_t window_k;
-  int32_t may_move;
-  int32_t origins_unknown; /* active branched timelines with no recorded origin (5DFEN) */
-
-  size_t board_count;
-  size_t move_count;
-  size_t edge_count;
-  size_t relation_count;
-  size_t window_count;
-  size_t e_count;
-  size_t src_extra_count;
-  size_t feature_board_count;
-  size_t origin_count;     /* distinct boards that are an active timeline's branch origin */
-
-  /* per board (board_count) */
-  const int32_t* timeline;     /* timeline position p ("-0" -> -1, "+0" -> 0, ...) */
-  const int32_t* half_turn;    /* 2T + (1 if black to move on the board) */
-  const uint8_t* is_head;
-  const uint8_t* active;       /* its timeline is active */
-  const uint8_t* side_to_move; /* 0 white, 1 black */
-  const uint8_t* playable;     /* the player to move may move from it now */
-  const int32_t* window_depth; /* the least k with the board in W(k); T5D_NO_WINDOW: none */
-  const int32_t* band_depth;   /* the same without the branch origins (its active
-                                  timeline's band only); T5D_NO_WINDOW: none */
-  const uint8_t* is_origin;    /* 1: an active timeline's branch origin (in W(k) at every k) */
-  const int32_t* parent;       /* the lineage (python/t5d/net/state.py `parent`): the board it
-                                  was made from - its timeline's previous board, or the
-                                  branch origin of a timeline's first board; -1: none known */
-
-  /* per square: feature_board_count blocks of width * height cells */
-  const int32_t* feature_boards; /* the board of each block */
-  const uint8_t* piece;          /* 0 empty, 1..12 = P N B R Q K U D S W C Y */
-  const uint8_t* colour;         /* 0 none, 1 white, 2 black */
-  const uint8_t* moved;          /* has-moved: a pawn, rook, king or brawn without '*' */
-
-  const t5d_move* moves;    /* move_count pseudo-legal moves */
-  const int32_t* edges;     /* edge_count x (src board, src cell, dst board, dst cell) */
-  const int32_t* relations; /* relation_count x (src board, src cell, dst board, dst cell, id) */
-  const int32_t* window;    /* W(k) */
-  const int32_t* e_boards;  /* E(k): travel destinations outside W(k) */
-  const int32_t* src_extra; /* src_extra(k): move sources outside W(k) */
-
-  /* ---- appended at stage E7 (register D8; rulebook R8): every field above
-   * keeps its offset. Turns have variable length, so submitting is an action;
-   * these are global (the per-board and per-square features are unchanged). */
-  int32_t acting_player;   /* 0 white, 1 black: the side whose action this is (= to_move).
-                              Once the present has shifted inside the action it differs
-                              from the colour to move on the present (present & 1) */
-  int32_t submit_possible; /* 1: submitting is possible now - the action's obligations are
-                              met (T5) - so under the ply split it is an action beside the
-                              moves */
-  int32_t submit_legal;    /* 1: submitting is legal now - possible, and no royal piece of
-                              the acting player's left capturable (C4, R1; exact) */
-
-  /* ---- appended in engine ABI round 1 (register A6, spec 2.3: the turn state, exact
-   * counts from the rules engine): every field above keeps its offset. Global, like the
-   * three above. */
-  int32_t mandatory_remaining; /* the boards the acting player must still play before
-                                  submitting is possible (T5, T6; Q5, Q6): 0 exactly when
-                                  submit_possible */
-  int32_t optional_playable;   /* the acting player's other playable boards (L5: playable,
-                                  not mandatory); 0 when no move may be made (Q4) */
-  int32_t moves_made;          /* the moves already made in the action in progress, since
-                                  its turn start (t5d_game_summary.moves_made for a game's
-                                  expansion; a search leaf's from its path): 0 at a turn
-                                  start. No state records it: equal boards with different
-                                  counts are different network inputs */
-} t5d_expansion;
 
 /* A game from a 5dpgn record (`length` bytes of UTF-8 text; the record's
  * headers name the variant or give 5DFEN boards), set up at its first position
@@ -414,10 +289,6 @@ T5D_API t5d_status t5d_game_replay_next(t5d_game* game, char** error);
  * present has shifted). The action has one more move (moves made + 1). */
 T5D_API t5d_status t5d_game_apply(t5d_game* game, const t5d_move* move, char** error);
 
-/* Applies the move at `index` of the handle's last expansion, which must be
- * of the current state (T5D_ERR_ARGUMENT otherwise); moves made + 1. */
-T5D_API t5d_status t5d_game_apply_expanded(t5d_game* game, size_t index, char** error);
-
 /* Submits the action (T5): the opponent's turn start (moves made: 0).
  * T5D_ERR_ILLEGAL while the present has not shifted to the opponent, or if a
  * royal piece of the mover's is left capturable (C4, R1). */
@@ -432,70 +303,8 @@ T5D_API t5d_status t5d_game_submit(t5d_game* game, char** error);
 #define T5D_LEGAL 1
 T5D_API t5d_status t5d_game_set_legality(t5d_game* game, int32_t legality, char** error);
 
-/* Expands the current state into the handle's buffers and describes them in
- * *out, with the handle's count of moves made in the action (A6). `options`
- * may be NULL: k = 8, every board's features, no relations, the pseudo-legal
- * moves. With options->legal_moves, the moves are a search leaf's under the
- * same budget (t5d_search_params.legality_checks and _nodes): the same moves in
- * the same order, the classification being deterministic - a leaf of a
- * board-move search with legal_moves_only (the defaults; T5D_NO_LIMIT both here
- * is exact, the search's default budget is not). A whole-turn search's leaves,
- * and those of the pseudo-legal test seam, carry the pseudo-legal moves
- * (legal_moves 0). */
-T5D_API t5d_status t5d_game_expand(t5d_game* game, const t5d_expand_options* options,
-                                   t5d_expansion* out, char** error);
-
 /* The game's multiverse as a t5d_state (fingerprint, canonical string, boards). */
 T5D_API t5d_status t5d_game_state(const t5d_game* game, t5d_state** out);
-
-/* ---- the per-square labels (engine ABI round 3; register D4, M20, A7) ----------
- * The auxiliary targets of section 12.4's per-square row ("deep attack facts
- * beyond the section 6 input bias"), exact from the rules engine: for every
- * square of every board (the canonical order, cells rank * width + file), the
- * eight labels of python/t5d/net/heads.py SQUARE_LABELS, in its order, relative
- * to the ACTING player (A7: "ours" its, "theirs" the opponent's). Each is 0 or
- * 1, or T5D_LABEL_UNKNOWN where a mate search stopped on its budget or an
- * exchange's recaptures could not be read (t5d/labels.hpp, item 0). What each
- * means - each a placeholder reading - is t5d/labels.hpp's and the engine
- * README's ("Per-square labels"). */
-
-#define T5D_SQUARE_LABEL_COUNT 8
-#define T5D_LABEL_EXCHANGE_LOSES_OCCUPANT 0
-#define T5D_LABEL_REACHABLE_IN_TWO_OURS 1
-#define T5D_LABEL_REACHABLE_IN_TWO_THEIRS 2
-#define T5D_LABEL_ARRIVAL_GIVES_CHECK_OURS 3
-#define T5D_LABEL_ARRIVAL_GIVES_CHECK_THEIRS 4
-#define T5D_LABEL_ROYAL_ZONE_OURS 5
-#define T5D_LABEL_ROYAL_ZONE_THEIRS 6
-#define T5D_LABEL_ARRIVAL_GIVES_MATE 7
-#define T5D_LABEL_UNKNOWN 255
-
-typedef struct t5d_label_options {
-  uint64_t mate_nodes; /* each mate search's node budget (arrival_gives_mate); UINT64_MAX
-                          (T5D_NO_LIMIT): no node limit (the search's memory limit stays).
-                          NULL options: 200000 (a placeholder) */
-} t5d_label_options;
-
-typedef struct t5d_square_labels {
-  size_t board_count;
-  int32_t width;
-  int32_t height;
-  int32_t label_count;   /* T5D_SQUARE_LABEL_COUNT */
-  int32_t acting_player; /* 0 white, 1 black: whose "ours" */
-  const uint8_t* labels; /* board_count x (width * height) x label_count */
-  uint64_t mate_candidates;     /* the moves whose mate was searched (submission legal, check) */
-  uint64_t mate_unknown;        /* ... and those the budget left undecided */
-  uint64_t first_moves_ours;    /* the moves each view read (see t5d/labels.hpp) */
-  uint64_t first_moves_theirs;
-  uint64_t second_moves_ours;
-  uint64_t second_moves_theirs;
-} t5d_square_labels;
-
-/* The per-square labels of the game's current state into the handle's buffer:
- * `out->labels` stays valid until the next t5d_game_square_labels or
- * t5d_game_destroy on the same handle. `options` may be NULL. */
-T5D_API t5d_status t5d_game_square_labels(t5d_game* game, const t5d_label_options* options,
-                                          t5d_square_labels* out, char** error);
 
 #ifdef __cplusplus
 } /* extern "C" */
