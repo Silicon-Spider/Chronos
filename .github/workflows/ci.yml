@@ -85,21 +85,29 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: false
+      # The compiler, CMake and Ninja come from MSYS2 ucrt64 (NE6). Python and git are
+      # the native Windows ones, as on the desktop: MSYS2's own git glob-expands its
+      # arguments when a native program starts it (HEAD^{tree} arrives as HEAD^tree),
+      # and MSYS2's Python mixes path separators, which breaks the harness's tests.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - uses: msys2/setup-msys2@v2
         with:
           msystem: UCRT64
           update: true
+          path-type: inherit
           install: >-
-            git
             mingw-w64-ucrt-x86_64-gcc
             mingw-w64-ucrt-x86_64-cmake
             mingw-w64-ucrt-x86_64-ninja
-            mingw-w64-ucrt-x86_64-python
       - name: Tools
         run: |
+          which g++ cmake ninja python git
           g++ --version
           cmake --version
           python --version
+          git --version
       - name: Configure
         run: cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCHRONOS_WERROR=ON
       - name: Build
