@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1344" height="1386" viewBox="0 0 1344 1386" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<rect width="1344" height="1386" fill="#ffffff"/>
+<text x="44" y="60" font-size="26" font-weight="600" fill="#141413" text-anchor="start">Nothing trains until the optimised core passes G1</text>
+<rect x="170" y="100" width="530" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435.0" y="143.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Phase 0 · Copy and review</text>
+<text x="435.0" y="173.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">done: rules engine copied, findings written</text>
+<path d="M 435 198 L 435 234" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,234 429.5,223.0 440.5,223.0" fill="#c4c2b8"/>
+<polygon points="378.0,262 435,234.0 492.0,262 435,290.0" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435" y="270" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">G0</text>
+<text x="520" y="269" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="start">merged 15 November 2026 · the gate ruled on in §3.5</text>
+<path d="M 435 290 L 435 326" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,326 429.5,315.0 440.5,315.0" fill="#c4c2b8"/>
+<rect x="170" y="326" width="530" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435.0" y="369.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Phase 1 · Optimise and build</text>
+<text x="435.0" y="399.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">rules engine, then the net, then the search</text>
+<path d="M 435 424 L 435 460" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,460 429.5,449.0 440.5,449.0" fill="#c4c2b8"/>
+<polygon points="378.0,488 435,460.0 492.0,488 435,516.0" fill="#e4eefa" stroke="#2a78d6" stroke-width="3"/>
+<text x="435" y="496" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">G1</text>
+<text x="520" y="495" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="start">three parts: rules engine · net exact on every target · search sound</text>
+<path d="M 435 516 L 435 552" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,552 429.5,541.0 440.5,541.0" fill="#c4c2b8"/>
+<rect x="170" y="552" width="530" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435.0" y="595.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Phase 2 · Gen 1</text>
+<text x="435.0" y="625.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">bootstrap self-play, first training</text>
+<path d="M 435 650 L 435 686" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,686 429.5,675.0 440.5,675.0" fill="#c4c2b8"/>
+<polygon points="378.0,714 435,686.0 492.0,714 435,742.0" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435" y="722" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">G2</text>
+<text x="520" y="721" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="start">data floor · parity · family check and screens · offline gate</text>
+<path d="M 435 742 L 435 778" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,778 429.5,767.0 440.5,767.0" fill="#c4c2b8"/>
+<rect x="170" y="778" width="530" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435.0" y="821.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Phase 3 · Integrate</text>
+<text x="435.0" y="851.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">gen-1 net in the search, ablations</text>
+<path d="M 435 876 L 435 912" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,912 429.5,901.0 440.5,901.0" fill="#c4c2b8"/>
+<polygon points="378.0,940 435,912.0 492.0,940 435,968.0" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435" y="948" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">G3</text>
+<text x="520" y="947" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="start">gen 1 beats bootstrap · imported heuristics confirmed or dropped</text>
+<path d="M 435 968 L 435 1004" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,1004 429.5,993.0 440.5,993.0" fill="#c4c2b8"/>
+<rect x="170" y="1004" width="530" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435.0" y="1047.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Phase 4 · Generations</text>
+<text x="435.0" y="1077.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">self-play with the latest net</text>
+<path d="M 435 1102 L 435 1138" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,1138 429.5,1127.0 440.5,1127.0" fill="#c4c2b8"/>
+<polygon points="378.0,1166 435,1138.0 492.0,1166 435,1194.0" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435" y="1174" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">G4</text>
+<text x="520" y="1173" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="start">each net promoted only by the promotion test</text>
+<path d="M 435 1194 L 435 1230" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="435,1230 429.5,1219.0 440.5,1219.0" fill="#c4c2b8"/>
+<rect x="170" y="1230" width="530" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="435.0" y="1273.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Phase 5 · Release</text>
+<text x="435.0" y="1303.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">AVX2, AVX-512, NEON and WASM builds</text>
+<path d="M 378 1166 L 98 1166 L 98 1053 L 170 1053" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="170,1053 159.0,1058.5 159.0,1047.5" fill="#c4c2b8"/>
+<text x="112" y="1148" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="start">next generation</text>
+</svg>

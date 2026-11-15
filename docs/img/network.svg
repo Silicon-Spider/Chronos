@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1344" height="1258" viewBox="0 0 1344 1258" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<rect width="1344" height="1258" fill="#ffffff"/>
+<text x="44" y="60" font-size="26" font-weight="600" fill="#141413" text-anchor="start">Board state is cached; what crosses boards is rebuilt per evaluation</text>
+<rect x="58" y="100" width="416" height="488" rx="12" fill="#ececea"/>
+<text x="266.0" y="134" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">once per board, at first use</text>
+<text x="890" y="134" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">per evaluation, head boards only</text>
+<rect x="72" y="156" width="388" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="266.0" y="199.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Pieces</text>
+<text x="266.0" y="229.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">2,048 features per board</text>
+<rect x="72" y="312" width="388" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="266.0" y="355.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Piece accumulator</text>
+<text x="266.0" y="385.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">2,048 → 256 per view, 16-bit</text>
+<rect x="72" y="468" width="388" height="98" rx="12" fill="#e4eefa" stroke="#2a78d6" stroke-width="3"/>
+<text x="266.0" y="511.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Board embedding</text>
+<text x="266.0" y="541.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">256 → 32 per view, cached</text>
+<rect x="488" y="156" width="388" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="682.0" y="199.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Attack relations</text>
+<text x="682.0" y="229.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">68,304 live rows · both colours</text>
+<rect x="488" y="312" width="388" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="682.0" y="341.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Relation accumulator</text>
+<text x="682.0" y="371.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">→ 128 per view, 8-bit rows;</text>
+<text x="682.0" y="399.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">same-board part cached</text>
+<rect x="906" y="156" width="388" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="1100.0" y="199.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Placement</text>
+<text x="1100.0" y="229.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">18 features per head board</text>
+<rect x="906" y="312" width="388" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="1100.0" y="355.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Placement layer</text>
+<text x="1100.0" y="385.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">18 → 16 per view</text>
+<rect x="72" y="624" width="388" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="266.0" y="667.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Past-board vector</text>
+<text x="266.0" y="697.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">embedding only: 32</text>
+<rect x="488" y="624" width="806" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="891.0" y="667.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Head-board vector</text>
+<text x="891.0" y="697.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">embedding 32 + relations 128 + placement 16 = 176, each after clipped ReLU</text>
+<rect x="72" y="780" width="1222" height="98" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="683.0" y="823.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Role pooling, per view</text>
+<text x="683.0" y="853.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">4 head roles × sum and max of 176 · 2 past roles × sum of 32 · 1,472 in all</text>
+<rect x="72" y="936" width="388" height="126" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="266.0" y="979.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Material path</text>
+<text x="266.0" y="1009.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">2,048 → 5, one per stack</text>
+<text x="266.0" y="1037.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">a weight per stack and role</text>
+<rect x="488" y="936" width="806" height="126" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="891.0" y="979.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Head, one of five stacks</text>
+<text x="891.0" y="1009.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">2 views × 1,472 = 2,944 → 32 → 32 → 1</text>
+<text x="891.0" y="1037.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">stack chosen by active timelines: 1, 2, 3–4, 5–8, 9+</text>
+<rect x="72" y="1120" width="1222" height="84" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="683.0" y="1170.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Score = head output + material path, from the chosen stack</text>
+<path d="M 266 254 L 266 312" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="266,312 260.5,301.0 271.5,301.0" fill="#c4c2b8"/>
+<path d="M 266 410 L 266 468" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="266,468 260.5,457.0 271.5,457.0" fill="#c4c2b8"/>
+<path d="M 682 254 L 682 312" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="682,312 676.5,301.0 687.5,301.0" fill="#c4c2b8"/>
+<path d="M 1100 254 L 1100 312" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="1100,312 1094.5,301.0 1105.5,301.0" fill="#c4c2b8"/>
+<path d="M 266 566 L 266 624" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="266,624 260.5,613.0 271.5,613.0" fill="#c4c2b8"/>
+<path d="M 460 517 L 530 517 L 530 624" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="530,624 524.5,613.0 535.5,613.0" fill="#c4c2b8"/>
+<path d="M 682 410 L 682 624" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="682,624 676.5,613.0 687.5,613.0" fill="#c4c2b8"/>
+<path d="M 1100 410 L 1100 624" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="1100,624 1094.5,613.0 1105.5,613.0" fill="#c4c2b8"/>
+<path d="M 266 722 L 266 780" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="266,780 260.5,769.0 271.5,769.0" fill="#c4c2b8"/>
+<path d="M 890 722 L 890 780" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="890,780 884.5,769.0 895.5,769.0" fill="#c4c2b8"/>
+<path d="M 890 878 L 890 936" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="890,936 884.5,925.0 895.5,925.0" fill="#c4c2b8"/>
+<path d="M 72 361 L 36 361 L 36 999 L 72 999" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="72,999 61.0,1004.5 61.0,993.5" fill="#c4c2b8"/>
+<path d="M 266 1062 L 266 1120" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="266,1120 260.5,1109.0 271.5,1109.0" fill="#c4c2b8"/>
+<path d="M 890 1062 L 890 1120" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="890,1120 884.5,1109.0 895.5,1109.0" fill="#c4c2b8"/>
+</svg>

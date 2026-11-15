@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """G0's relation analysis: displacement-class edges, delta-t buckets and live feature count.
 
-Reads what chronos-relhist writes:
+Reads what fractal-relhist writes:
   --hist FILE   the histograms (--out) over the start games of the ND8 split
   --probe FILE  the engine-derived reachability table (--probe)
 and prints Markdown tables for docs/gates/G0.md (and --json FILE with every number).

@@ -27,7 +27,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Tests that need a program Chronos doesn't build, with the reason (docs/gates/G0.md).
+# Tests that need a program Fractal doesn't build, with the reason (docs/gates/G0.md).
 SKIP = {
     "measure_exe_turns_on_hand_written_records":
         "runs t5d-measure (not copied: it includes t5d/expand.hpp, spec 3.2) on engine/testdata/turn-width (not copied)",

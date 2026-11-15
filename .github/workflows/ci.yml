@@ -42,19 +42,21 @@ jobs:
           cmake --version
           python3 --version
       - name: Configure
-        run: cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCHRONOS_WERROR=ON
+        run: cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DFRACTAL_WERROR=ON
       - name: Build
         run: cmake --build build/engine
       - name: Copied tests
         run: $PY tools/run_tests.py --exe build/engine/t5d-tests
       - name: Provenance of the copied files
         run: $PY tools/check_provenance.py
+      - name: Spec and register agree
+        run: $PY tools/check_docs.py
       - name: Near-mate bench smoke test
-        run: build/engine/chronos-bench --quick --sections mate --no-pin
+        run: build/engine/fractal-bench --quick --sections mate --no-pin
       - name: Harness self-test
         run: $PY oracles/harness.py selftest
       - name: Harness static checks
-        # verify runs every static check. Without the oracle checkouts (Chronos has no
+        # verify runs every static check. Without the oracle checkouts (Fractal has no
         # submodules: NS2, NF12) three of them can't pass. This step requires exactly
         # those findings and nothing else (docs/gates/G0.md).
         run: |
@@ -121,15 +123,17 @@ jobs:
           python --version
           git --version
       - name: Configure
-        run: cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCHRONOS_WERROR=ON
+        run: cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DFRACTAL_WERROR=ON
       - name: Build
         run: cmake --build build/engine
       - name: Copied tests
         run: $PY tools/run_tests.py --exe build/engine/t5d-tests
       - name: Provenance of the copied files
         run: $PY tools/check_provenance.py
+      - name: Spec and register agree
+        run: $PY tools/check_docs.py
       - name: Near-mate bench smoke test
-        run: build/engine/chronos-bench --quick --sections mate --no-pin
+        run: build/engine/fractal-bench --quick --sections mate --no-pin
       - name: Harness self-test
         run: $PY oracles/harness.py selftest
       - name: Harness static checks

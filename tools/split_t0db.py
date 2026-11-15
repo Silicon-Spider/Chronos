@@ -7,7 +7,7 @@ sides of the split:
   removed;
 - records whose sequences of turn-start positions are equal, or whose sequence is a
   proper prefix of sequences that all belong to one game (a game recorded twice, or cut
-  short), read from the records file that chronos-relhist writes (--records-out). A
+  short), read from the records file that fractal-relhist writes (--records-out). A
   refused record takes part with the turn starts it reached before its fault. A short
   record that opens several different games is a shared opening and stays apart.
 Clusters are ordered by SHA-256 of "<seed>:<smallest GameNum>"; they fill the start set
@@ -172,7 +172,7 @@ def main() -> int:
     lines = [
         "# t0database split by game (spec ND8): start games and held-out games.",
         f"# Written by tools/split_t0db.py, seed {a.seed}, from data/t0database/Data.csv (SHA-256 {PINNED_SHA256})",
-        "# and the parse-mode replay of every record by chronos-relhist.",
+        "# and the parse-mode replay of every record by fractal-relhist.",
         "# cluster: the smallest GameNum of the rows that record the same game: identical move text without",
         "# clocks, equal turn-start sequences of complete records, or a shorter or refused record whose turn",
         "# starts open exactly one game that names the same players on the same day or shares at least 20",

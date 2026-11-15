@@ -1,11 +1,11 @@
-// tools/bench/chronos_bench.cpp - chronos-bench: Chronos's Phase 0 baseline speeds
+// tools/bench/fractal_bench.cpp - fractal-bench: Fractal's Phase 0 baseline speeds
 // (docs/MEASUREMENTS.md), measured on the rules engine copied from Temporal-5D (spec
 // 3.1; namespace t5d). New code: no tool of Temporal-5D's is copied here. It reads
 // only the copied public headers (engine/include/t5d) and the copied synthetic
 // player (engine/tools/synthetic.hpp), and holds no rule of chess or of 5D movement
 // and no evaluation of any kind: every move, turn and verdict comes from the engine.
 //
-//   chronos-bench [--sections movegen,turngen,mate] [--rounds R] [--sample-ms S]
+//   fractal-bench [--sections movegen,turngen,mate] [--rounds R] [--sample-ms S]
 //                 [--games G] [--children C] [--turn-cap K] [--passes P]
 //                 [--records DIR] [--json FILE] [--quick] [--no-pin]
 //
@@ -92,17 +92,17 @@
 
 #if (defined(__x86_64__) || defined(__i386__)) && (defined(__GNUC__) || defined(__clang__))
 #include <cpuid.h>
-#define CHRONOS_BENCH_CPUID 1
+#define FRACTAL_BENCH_CPUID 1
 #endif
 
-#ifndef CHRONOS_COMPILER
-#define CHRONOS_COMPILER "unknown"
+#ifndef FRACTAL_COMPILER
+#define FRACTAL_COMPILER "unknown"
 #endif
-#ifndef CHRONOS_BUILD_TYPE
-#define CHRONOS_BUILD_TYPE "unknown"
+#ifndef FRACTAL_BUILD_TYPE
+#define FRACTAL_BUILD_TYPE "unknown"
 #endif
-#ifndef CHRONOS_CXX_FLAGS
-#define CHRONOS_CXX_FLAGS "unknown"
+#ifndef FRACTAL_CXX_FLAGS
+#define FRACTAL_CXX_FLAGS "unknown"
 #endif
 #ifndef T5D_VERSION_STRING
 #define T5D_VERSION_STRING "0.0.0"
@@ -312,7 +312,7 @@ class Json {
 // ---- the machine ------------------------------------------------------------------------
 
 std::string cpu_brand() {
-#if defined(CHRONOS_BENCH_CPUID)
+#if defined(FRACTAL_BENCH_CPUID)
   unsigned a = 0, b = 0, c = 0, d = 0;
   if (__get_cpuid(0x80000000u, &a, &b, &c, &d) == 0 || a < 0x80000004u) return "unknown";
   char brand[49] = {};
@@ -423,7 +423,7 @@ const std::vector<std::pair<int, int>> kClasses = {{100, 6}, {160, 7}, {240, 8},
 
 void usage(std::FILE* f) {
   std::fputs(
-      "chronos-bench: Chronos's Phase 0 baseline speeds (one thread).\n"
+      "fractal-bench: Fractal's Phase 0 baseline speeds (one thread).\n"
       "  --sections LIST   movegen,turngen,mate (default: all)\n"
       "  --rounds R        movegen: interleaved rounds after the warm-up (default 15)\n"
       "  --sample-ms S     movegen: the length of a sample (default 200)\n"
@@ -619,7 +619,7 @@ std::vector<PositionSet> synthetic_classes(const Options& opt, bool build_stream
       spec.target_boards = n;
       const t5d::synthetic::Game game = t5d::synthetic::play_until_reached(spec);
       if (game.stop != t5d::synthetic::Stop::Target) {
-        std::fprintf(stderr, "chronos-bench: synthetic %s game %d: no game reached %d boards (seed %llu: %s); skipped\n",
+        std::fprintf(stderr, "fractal-bench: synthetic %s game %d: no game reached %d boards (seed %llu: %s); skipped\n",
                      set.name.c_str(), g, n, static_cast<unsigned long long>(game.seed),
                      t5d::synthetic::stop_name(game.stop));
         ++set.games_skipped;
@@ -649,7 +649,7 @@ std::vector<PositionSet> synthetic_classes(const Options& opt, bool build_stream
         ++set.bases_without_child;
       }
     }
-    std::fprintf(stderr, "chronos-bench: synthetic %s: %d games (%.1f s)\n", set.name.c_str(),
+    std::fprintf(stderr, "fractal-bench: synthetic %s: %d games (%.1f s)\n", set.name.c_str(),
                  set.games, seconds_between(t0, Clock::now()));
     out.push_back(std::move(set));
   }
@@ -949,7 +949,7 @@ void run_turngen(const Options& opt, std::vector<TurngenSet>& sets) {
         p.last = r;
       }
       ts.wall_s += seconds_between(t0, Clock::now());
-      std::fprintf(stderr, "chronos-bench: turngen pass %d/%d %s: %zu positions\n", pass + 1,
+      std::fprintf(stderr, "fractal-bench: turngen pass %d/%d %s: %zu positions\n", pass + 1,
                    opt.passes, ts.set->name.c_str(), ts.set->bases.size());
     }
   }
@@ -1117,7 +1117,7 @@ MateResults run_mate(const Options& opt) {
     c.expect_checkmate = true;
     c.ok = c.verdict == "checkmate" && c.exhaustive;
     out.cases.push_back(c);
-    std::fprintf(stderr, "chronos-bench: mate n=%d hypercuboid done\n", n);
+    std::fprintf(stderr, "fractal-bench: mate n=%d hypercuboid done\n", n);
   }
   for (int n = 1; n <= 3; ++n) {
     MateCase c = time_mate(n, t5d::Detector::Naive, n <= 2 ? 3 : 1, 0.0);
@@ -1126,7 +1126,7 @@ MateResults run_mate(const Options& opt) {
     c.ok = n <= 2 ? c.verdict == "checkmate" && c.exhaustive
                   : c.verdict == "checkmate" || c.verdict == "unknown";
     out.cases.push_back(c);
-    std::fprintf(stderr, "chronos-bench: mate n=%d naive done\n", n);
+    std::fprintf(stderr, "fractal-bench: mate n=%d naive done\n", n);
   }
   {
     const t5d::GameState s = mate_position(2);
@@ -1201,11 +1201,11 @@ void write_json(const std::string& path, const Options& opt, const Pinning& pin,
                 double total_s) {
   Json j;
   j.open_object();
-  j.key("tool").str("chronos-bench");
+  j.key("tool").str("fractal-bench");
   j.key("version").str(T5D_VERSION_STRING);
-  j.key("compiler").str(CHRONOS_COMPILER);
-  j.key("build_type").str(CHRONOS_BUILD_TYPE);
-  j.key("cxx_flags").str(CHRONOS_CXX_FLAGS);
+  j.key("compiler").str(FRACTAL_COMPILER);
+  j.key("build_type").str(FRACTAL_BUILD_TYPE);
+  j.key("cxx_flags").str(FRACTAL_CXX_FLAGS);
   j.key("cpu").str(cpu_brand());
   j.key("hardware_concurrency").unum(std::thread::hardware_concurrency());
   j.key("thread_cpu_time").str(thread_cpu_method());
@@ -1374,11 +1374,11 @@ int run(int argc, char** argv) {
     if (on) sections += (sections.empty() ? "" : ",") + std::string(name);
   }
 
-  std::printf("chronos-bench %s: Chronos Phase 0 baseline speeds (rules engine copied from Temporal-5D)\n",
+  std::printf("fractal-bench %s: Fractal Phase 0 baseline speeds (rules engine copied from Temporal-5D)\n",
               T5D_VERSION_STRING);
-  std::printf("compiler:   %s\n", CHRONOS_COMPILER);
-  std::printf("build type: %s\n", CHRONOS_BUILD_TYPE);
-  std::printf("flags:      %s\n", CHRONOS_CXX_FLAGS);
+  std::printf("compiler:   %s\n", FRACTAL_COMPILER);
+  std::printf("build type: %s\n", FRACTAL_BUILD_TYPE);
+  std::printf("flags:      %s\n", FRACTAL_CXX_FLAGS);
   std::printf("cpu:        %s\n", cpu_brand().c_str());
   std::printf("logical processors: %u; thread %s%s; thread CPU time: %s\n",
               std::thread::hardware_concurrency(),
@@ -1421,7 +1421,7 @@ int run(int argc, char** argv) {
     for (PositionSet& s : classes) movegen_sets.push_back(&s);
     for (PositionSet& s : buckets) movegen_sets.push_back(&s);
     for (PositionSet* s : movegen_sets) describe_stream(*s);
-    std::fprintf(stderr, "chronos-bench: movegen: warm-up + %d rounds x %zu sets x %d ms\n", opt.rounds,
+    std::fprintf(stderr, "fractal-bench: movegen: warm-up + %d rounds x %zu sets x %d ms\n", opt.rounds,
                  movegen_sets.size(), opt.sample_ms);
     run_movegen(opt, movegen_sets);
     print_movegen(movegen_sets);
@@ -1450,7 +1450,7 @@ int run(int argc, char** argv) {
     std::printf("json: %s\n", opt.json.c_str());
   }
   if (mate && !mate->ok) {
-    std::fprintf(stderr, "chronos-bench: a mate verdict differs from the expected one\n");
+    std::fprintf(stderr, "fractal-bench: a mate verdict differs from the expected one\n");
     return 1;
   }
   return 0;
@@ -1462,10 +1462,10 @@ int main(int argc, char** argv) {
   try {
     return run(argc, argv);
   } catch (const std::invalid_argument& e) {
-    std::fprintf(stderr, "chronos-bench: %s\n", e.what());
+    std::fprintf(stderr, "fractal-bench: %s\n", e.what());
     return 2;
   } catch (const std::exception& e) {
-    std::fprintf(stderr, "chronos-bench: %s\n", e.what());
+    std::fprintf(stderr, "fractal-bench: %s\n", e.what());
     return 1;
   }
 }

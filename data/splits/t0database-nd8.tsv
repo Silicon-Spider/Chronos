@@ -1,6 +1,6 @@
 # t0database split by game (spec ND8): start games and held-out games.
 # Written by tools/split_t0db.py, seed 20261108, from data/t0database/Data.csv (SHA-256 37fb7c1ce46efb27d42a8b9d0b230df13faff1b36bef24af8c15ba5c8a6c7a4e)
-# and the parse-mode replay of every record by chronos-relhist.
+# and the parse-mode replay of every record by fractal-relhist.
 # cluster: the smallest GameNum of the rows that record the same game: identical move text without
 # clocks, equal turn-start sequences of complete records, or a shorter or refused record whose turn
 # starts open exactly one game that names the same players on the same day or shares at least 20

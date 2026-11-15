@@ -1,13 +1,15 @@
-# Chronos initial build prompt
+# Fractal initial build prompt
 
-Paste this into Claude Code, opened in the Chronos folder, to start the first session. Later sessions follow `docs/BUILD_PROMPT.md`.
+*Kept for the record. This prompt started the first session, which delivered Phase 0 and gate report G0 on 15 November 2026; the project was then called Chronos. Some of its wording has since been overtaken (not every copied file can carry a provenance header, and 36 of the 64 test files build). Later sessions follow `docs/BUILD_PROMPT.md`.*
+
+It was pasted into Claude Code, opened in the project folder, to start the first session.
 
 ```text
-You're starting the build of Chronos, a CPU-only 5D chess engine in C++20: alpha-beta over whole turns, scored by an NNUE that reads the boards. This session covers Step 0 and Phase 0 only and ends at gate G0. Stop there even if G0 passes; I'll review it before Phase 1.
+You're starting the build of Fractal, a CPU-only 5D chess engine in C++20: alpha-beta over whole turns, scored by an NNUE that reads the boards. This session covers Step 0 and Phase 0 only and ends at gate G0. Stop there even if G0 passes; I'll review it before Phase 1.
 
 Read these in full first: CLAUDE.md, docs/BUILD_PROMPT.md, docs/SPEC.md (§0, §3, §7.6 and §14 above all) and docs/DECISIONS.md. Where this message and BUILD_PROMPT.md differ, this message wins for this session.
 
-1. Step 0. This folder isn't a git repository yet, and the remote's main already holds README.md and LICENSE. Run git init -b main, git remote add origin https://github.com/Silicon-Spider/Chronos.git, git fetch origin and git reset origin/main. Commit everything here as "Add design spec, decision register and build prompts", push to main, and check that git log origin/main shows it.
+1. Step 0. This folder isn't a git repository yet, and the remote's main already holds README.md and LICENSE. Run git init -b main, git remote add origin https://github.com/Silicon-Spider/Fractal.git, git fetch origin and git reset origin/main. Commit everything here as "Add design spec, decision register and build prompts", push to main, and check that git log origin/main shows it.
 
 2. Create the branch phase-0-copy. Everything below happens on it.
 

@@ -6,9 +6,10 @@ Conventions:
 
 - **Machine.** CPU model, cores and logical processors, RAM and OS, and whether the machine was otherwise quiet.
 - **Build.** Compiler and version, build type and flags, as the tool prints them.
-- **Commit.** The Chronos commit the binaries were built from.
+- **Commit.** The Fractal commit the binaries were built from.
 - **Rates.** Medians over interleaved rounds, with the slowest and fastest round in brackets, unless an entry says otherwise. Percentiles are nearest rank.
 - **Comparison.** Temporal-5D's figures quoted in the spec came from the same CPU model (Ryzen 9 9900X), so the Phase 0 entries compare against them directly.
+- **Names.** The project was called Chronos until 15 November 2026, and this log now gives the current names throughout. At a commit from before the rename, the tools are `chronos-bench` and `chronos-relhist`, and the CMake option is `CHRONOS_WERROR`.
 
 ## 1. Phase 0 baselines: movegen, turn generation, the 5-timeline hypercuboid case (2026-11-15)
 
@@ -18,14 +19,14 @@ The copied rules engine, unchanged apart from the capi removal, measured before 
   - The machine was quiet: 1.2% busy just before the run (PowerShell `Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 2 -MaxSamples 3`, averaged). The bench itself doesn't sample load during the run.
   - One thread, pinned to logical processor 2, priority above normal.
 - **Build:** GNU g++ 16.2.0 (MSYS2 ucrt64), Release, `-O2 -DNDEBUG`, statically linked.
-- **Commit:** Chronos `6364eb0` on `phase-0-copy`; engine copied from Temporal-5D `c8a9c49`.
+- **Commit:** Fractal `6364eb0` on `phase-0-copy`; engine copied from Temporal-5D `c8a9c49`.
 - **Commands:**
 
   ```
-  cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=C:/msys64/ucrt64/bin/g++.exe -DCHRONOS_WERROR=ON
+  cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=C:/msys64/ucrt64/bin/g++.exe -DFRACTAL_WERROR=ON
   cmake --build build/engine
   python -I data/t0database/to_5dpgn.py build/t0db
-  build/engine/chronos-bench --records build/t0db --json build/g0/bench.json
+  build/engine/fractal-bench --records build/t0db --json build/g0/bench.json
   python -I tools/bench/turngen_table.py build/g0/bench.json
   ```
 
@@ -100,3 +101,79 @@ Notes:
 | 3 (7) | 248 nodes, 102.0 µs | stopped by the memory ceiling after 1,007,435 nodes, 0.705 s: unknown | 248 against 1,007,435 nodes and a stop |
 
 All proven verdicts are checkmate, as the test expects. A `TurnGenerator` on the n = 2 position ends exhausted with no turn after 796 nodes, 464 µs.
+
+## 2. Phase 0 outputs read again: turn width, relation families, live rows, Δt buckets, game lengths (2026-11-15)
+
+Nothing was run again for this entry. It reads further figures out of the files Phase 0 wrote, for the spec's revision of 15 November 2026 (`docs/gates/G0-rulings.md`).
+
+- **Inputs:** entry 1's `build/g0/bench.json`, and the outputs of G0's relation run on the same machine and build:
+
+  ```
+  build/engine/fractal-relhist --records build/t0db --games build/g0/start-games.txt --records-out build/g0/records.tsv --out build/g0/start.json
+  build/engine/fractal-relhist --probe build/g0/probe.json
+  ```
+
+  `start-games.txt` lists the 507 start games of `data/splits/t0database-nd8.tsv`. The table step of entry 1 (`tools/bench/turngen_table.py`) first appears in commit `2346376`, not `6364eb0`.
+- **Command:**
+
+  ```
+  python -I tools/phase0_figures.py --bench build/g0/bench.json --hist build/g0/start.json --probe build/g0/probe.json --records build/g0/records.tsv --split data/splits/t0database-nd8.tsv
+  ```
+
+### Turn starts with at least 1,000 legal turns
+
+Entry 1's turn-generation run stopped each generator at 1,000 turns. These are the t0database turn starts that reached that cap.
+
+| Positions | Turn starts | With a legal turn | At the cap | Share of those with a legal turn |
+| --- | ---: | ---: | ---: | ---: |
+| Under 50 boards | 19,410 | 19,023 | 2,302 | 12.1% |
+| 50-99 boards | 3,162 | 2,965 | 1,376 | 46.4% |
+| 100-199 boards | 189 | 176 | 124 | 70.5% |
+
+That run's scorer gave every move a higher score than leaving its board, so with several playable boards its first turns play all of them.
+
+### Relations by family, kind and where the victim stands
+
+The start games: 2,496,465 relations over 15,387 distinct turn starts, 162.2 per position. An attack reaches an enemy piece and a defence an own one. Figures are per position.
+
+| Family | Attacks onto heads | Attacks onto history | Defences onto heads | Defences onto history | All |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Same board | 6.90 | 0.00 | 53.11 | 0.00 | 60.00 (37.0%) |
+| Timeline only | 0.84 | 1.18 | 7.69 | 11.82 | 21.54 (13.3%) |
+| Time only | 0.00 | 5.19 | 0.00 | 44.17 | 49.36 (30.4%) |
+| Both | 0.24 | 1.59 | 4.81 | 24.70 | 31.34 (19.3%) |
+| **All** | 7.98 | 7.96 | 65.61 | 80.70 | 162.25 |
+
+- Defences onto history boards are 1,241,663 relations, 49.7% of all.
+- Attacks, and defences onto head boards, are 1,254,802: 81.5 per position, 60.0 of them on the attacker's own board and 21.5 leaving it.
+- 1,478,807 relations (59.2%) are read on a passed copy.
+- A victim on a passed copy counts as on its timeline's head.
+
+### Live relation rows with defences kept only onto head boards
+
+The same count as G0's (77,136 live rows, 20,376 for the gen-1 kinds), less the time-only defence rows: a time-only relation always lands on a history board.
+
+| Rows | All twelve kinds | The six gen-1 kinds |
+| --- | ---: | ---: |
+| On the attacker's own board | 28,752 | 8,472 |
+| Across boards | 39,552 | 9,600 |
+| **Live** | **68,304** | **18,072** |
+| Time-only defence rows, live at G0 and dropped here | 8,832 | 2,304 |
+
+### Δt to the present in whole turns
+
+G0's histogram of 25,202 head boards, with a half-turn distance rounded up to whole turns.
+
+| Bucket | Behind | 0 | 1 | 2 | 3-4 | 5+ |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Head boards | 611 | 17,611 | 1,663 | 1,375 | 1,853 | 2,089 |
+| Share | 2.4% | 69.9% | 6.6% | 5.5% | 7.4% | 8.3% |
+
+### How the 692 usable human games end
+
+| Timelines at the end | 1 | 2 | 3-4 | 5-8 | 9+ |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Games | 214 (30.9%) | 141 (20.4%) | 239 (34.5%) | 91 (13.2%) | 7 (1.0%) |
+
+- Turns: 27,097 in all; mean 39.2, median 37, longest 99.
+- Boards at the end: median 44, 95th percentile 85, most 186.

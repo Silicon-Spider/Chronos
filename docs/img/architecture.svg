@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1344" height="854" viewBox="0 0 1344 854" font-family="'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif">
+<rect width="1344" height="854" fill="#ffffff"/>
+<text x="44" y="60" font-size="26" font-weight="600" fill="#141413" text-anchor="start">The net is trained by the same feature code it plays with</text>
+<text x="44" y="110" font-size="17" font-weight="600" fill="#5e5d59" text-anchor="start" letter-spacing="0.6">ENGINE · CPU, C++20</text>
+<text x="778" y="110" font-size="17" font-weight="600" fill="#5e5d59" text-anchor="start" letter-spacing="0.6">TRAINING LOOP · OFFLINE</text>
+<rect x="44" y="136" width="634" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="361.0" y="178.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">5DUCI</text>
+<text x="361.0" y="208.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">test-match runner · other engines&#x27; tools · GUIs</text>
+<rect x="44" y="270" width="634" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="361.0" y="312.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Search</text>
+<text x="361.0" y="342.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">PVS over turns · TT · null move · Lazy SMP</text>
+<rect x="44" y="404" width="302" height="124" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="195.0" y="446.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Turn generator</text>
+<text x="195.0" y="476.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">hypercuboid search,</text>
+<text x="195.0" y="504.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">best-first, legal only</text>
+<rect x="376" y="404" width="302" height="124" rx="12" fill="#e4eefa" stroke="#2a78d6" stroke-width="3"/>
+<text x="527.0" y="446.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">NNUE eval</text>
+<text x="527.0" y="476.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">board embeddings,</text>
+<text x="527.0" y="504.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">relations, roles, head</text>
+<rect x="44" y="568" width="634" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="361.0" y="610.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Position layer</text>
+<text x="361.0" y="640.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">immutable boards · board records · content cache</text>
+<rect x="44" y="702" width="634" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="361.0" y="744.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Rules engine · from Temporal-5D, reviewed</text>
+<text x="361.0" y="774.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">move generation · check · relation facts · tests</text>
+<rect x="778" y="136" width="522" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="1039.0" y="178.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Game sources</text>
+<text x="1039.0" y="208.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">self-play · t0database starts</text>
+<rect x="778" y="270" width="522" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="1039.0" y="312.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Records</text>
+<text x="1039.0" y="342.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">games: start · turns · scores · flags · result</text>
+<rect x="778" y="404" width="522" height="96" rx="12" fill="#e4eefa" stroke="#2a78d6" stroke-width="3"/>
+<text x="1039.0" y="446.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Featuriser</text>
+<text x="1039.0" y="476.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">the engine&#x27;s feature code, via its C API</text>
+<rect x="778" y="538" width="522" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="1039.0" y="580.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Trainer</text>
+<text x="1039.0" y="610.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">PyTorch · simulates the integer path</text>
+<rect x="778" y="672" width="522" height="96" rx="12" fill="#ffffff" stroke="#c4c2b8" stroke-width="2"/>
+<text x="1039.0" y="714.0" font-size="22" font-weight="600" fill="#141413" text-anchor="middle">Net file</text>
+<text x="1039.0" y="744.0" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">quantised · provenance header · NETS.md</text>
+<path d="M 361 232 L 361 270" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="361,270 355.5,259.0 366.5,259.0" fill="#c4c2b8"/>
+<path d="M 195 366 L 195 404" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="195,404 189.5,393.0 200.5,393.0" fill="#c4c2b8"/>
+<path d="M 527 366 L 527 404" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="527,404 521.5,393.0 532.5,393.0" fill="#c4c2b8"/>
+<path d="M 195 528 L 195 568" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="195,568 189.5,557.0 200.5,557.0" fill="#c4c2b8"/>
+<path d="M 527 528 L 527 568" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="527,568 521.5,557.0 532.5,557.0" fill="#c4c2b8"/>
+<path d="M 361 664 L 361 702" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="361,702 355.5,691.0 366.5,691.0" fill="#c4c2b8"/>
+<path d="M 678 184 L 778 184" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="778,184 767.0,189.5 767.0,178.5" fill="#c4c2b8"/>
+<text x="728" y="170" font-size="19" font-weight="400" fill="#5e5d59" text-anchor="middle">games</text>
+<path d="M 1039 232 L 1039 270" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="1039,270 1033.5,259.0 1044.5,259.0" fill="#c4c2b8"/>
+<path d="M 1039 366 L 1039 404" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="1039,404 1033.5,393.0 1044.5,393.0" fill="#c4c2b8"/>
+<path d="M 1039 500 L 1039 538" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="1039,538 1033.5,527.0 1044.5,527.0" fill="#c4c2b8"/>
+<path d="M 1039 634 L 1039 672" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="1039,672 1033.5,661.0 1044.5,661.0" fill="#c4c2b8"/>
+<path d="M 678 452 L 778 452" fill="none" stroke="#2a78d6" stroke-width="3" stroke-dasharray="9 7"/>
+<path d="M 778 720 L 728 720 L 728 500 L 678 500" fill="none" stroke="#c4c2b8" stroke-width="2"/>
+<polygon points="678,500 689.0,494.5 689.0,505.5" fill="#c4c2b8"/>
+</svg>
