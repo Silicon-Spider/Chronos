@@ -36,6 +36,7 @@
 
 #include <algorithm>
 #include <array>
+#include <stdexcept>
 #include <bit>
 #include <chrono>
 #include <cstddef>
@@ -245,8 +246,26 @@ class JsonWriter {
     out_ += '"';
   }
 
+  // The open containers, innermost last, in a fixed-depth stack: a std::vector of this
+  // 2-byte struct trips a false -Wstringop-overflow in g++ 13's libstdc++ at -O2.
+  class LevelStack {
+   public:
+    void push_back(Level l) {
+      if (size_ == data_.size()) throw std::length_error("JSON nested too deeply");
+      data_[size_++] = l;
+    }
+    Level& back() { return data_[size_ - 1]; }
+    void pop_back() { --size_; }
+    bool empty() const { return size_ == 0; }
+    std::size_t size() const { return size_; }
+
+   private:
+    std::array<Level, 32> data_{};
+    std::size_t size_ = 0;
+  };
+
   std::string out_;
-  std::vector<Level> stack_;
+  LevelStack stack_;
   bool after_key_ = false;
 };
 
