@@ -49,6 +49,8 @@ jobs:
         run: $PY tools/run_tests.py --exe build/engine/t5d-tests
       - name: Provenance of the copied files
         run: $PY tools/check_provenance.py
+      - name: Spec and register agree
+        run: $PY tools/check_docs.py
       - name: Near-mate bench smoke test
         run: build/engine/fractal-bench --quick --sections mate --no-pin
       - name: Harness self-test
@@ -128,6 +130,8 @@ jobs:
         run: $PY tools/run_tests.py --exe build/engine/t5d-tests
       - name: Provenance of the copied files
         run: $PY tools/check_provenance.py
+      - name: Spec and register agree
+        run: $PY tools/check_docs.py
       - name: Near-mate bench smoke test
         run: build/engine/fractal-bench --quick --sections mate --no-pin
       - name: Harness self-test
