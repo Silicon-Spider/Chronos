@@ -321,11 +321,12 @@ Eval stays at or under half of node time [NN12, NQ4]. Per node, that's a few col
 | Starts [ND4] | The engine's own opening generator plus positions from t0database | Provisional, G0 |
 | Labels [ND5] | λ × score + (1 − λ) × result; λ 0.2 in gen 1, rising toward 0.7 | Provisional, G2 |
 | Filter [ND6] | Quiet positions only | Provisional, arm NX5 |
-| Provenance [ND7] | Engine commit, net hash, variant, start source and search settings on every record | Committed |
+| Provenance [ND7] | Engine commit, net hash, variant, start source, search settings and the machine or runner on every record | Committed |
 | Validation [ND8] | Split by game; held-out t0database games scored against their human results | Committed |
 | Rescoring [ND9] | Stored positions re-searched with each newly promoted net, refreshing the window's labels | Provisional, G4 |
 | Depth caps [ND10] | Most self-play moves searched shallow and not recorded; a fraction searched at full depth and recorded | Provisional, G2 |
 | Oversampling [ND11] | Positions where deep search disagrees most with the static eval are sampled more often | Provisional, G2 |
+| Actions shards [ND12] | Self-play shards on GitHub Actions as overflow from Phase 2: each under six hours, uploading its records for the desktop to check and merge (§11) | Provisional, G2 |
 
 - **Why quiet only.** Kairos's net trained on all positions lost 43 ± 11 Elo to its quiet-trained net: labels on tactical positions carried tactics the search couldn't confirm. Quiet here means not in check, best turn not a capture, and quiescence within a small margin of the static eval.
 - **Why λ starts low.** The bootstrap net knows only material, so gen 1's scores are weak, and results carry most of the label until the nets improve. Kairos's 70/30 score/result split beat 90/10 by 27 ± 17, which sets the target.
@@ -343,7 +344,7 @@ Eval stays at or under half of node time [NN12, NQ4]. Per node, that's a few col
 - **Factorised features** [NL3]: during training, shared virtual features (piece kind and colour across squares; attacker and victim kind across locations and classes) help the sparse relation table learn from limited data. They fold into the real weights at export. Provisional, G2.
 - **Quantisation-aware training** [NL7]: training simulates the engine's integer rounding, as Stockfish 19 does, so the exported net loses less to quantisation. Provisional, G2.
 - **Auxiliary targets** [NL8]: training-only heads predict facts from the game's future: who gets mated and on which board, material per board a few turns on, and the score at greater search depths. They add signal per position and are dropped at export, so they cost nothing in play. Auxiliary targets are a large part of KataGo's data efficiency. Provisional, G2: kept only if they lower held-out loss on the main target.
-- **CPU first** [NL4]: gen 1 must train on a desktop CPU; a GPU only speeds it up.
+- **CPU first** [NL4]: training runs on a desktop CPU, never on GitHub Actions; a GPU only speeds it up.
 - **Net file** [NL5]: a header with magic, format version, architecture and feature-set hashes, quantisation scales, data provenance and a checksum.
 - **Net log** [NL6]: NETS.md records each net's data, training settings, offline-gate result and test-match result. A net is promoted only on a test-match win, and the last good net stays the default.
 
@@ -355,6 +356,7 @@ Eval stays at or under half of node time [NN12, NQ4]. Per node, that's a few col
 - **Determinism** [NE4]: a single-thread fixed-node search gives the same result on every run, compiler and SIMD target.
 - **Licence** [NE5]: GPL-3.0, sole copyright yours. t0database keeps its MIT licence file.
 - **Toolchain** [NE6]: C++20; g++ 13 or later, or clang; CMake and Ninja; on Windows, MSYS2 ucrt64, where g++ 16.2 is already set up.
+- **Compute** [NE7]: the desktop by default, and always for training [NL4]. GitHub Actions runs CI on every push and adds spare capacity for test matches from Phase 3 [NM13] and self-play shards from Phase 2 [ND12]. Chronos is public, so standard runners are free: 4 CPUs, 16 GB of RAM, 14 GB of disk and a 6-hour cap per job, with up to 20 jobs at once on GitHub's Free plan. Every Actions job also runs locally with the same command, and nothing depends on Actions being available. GitHub's terms allow Actions only for developing and testing the software in the repo, without a disproportionate load on its servers, so each match or datagen workflow runs one instance at a time and never on a schedule. Kairos runs its matches this way, in 40 shards of under six hours.
 
 ## 12. Testing and predictions
 
@@ -374,6 +376,7 @@ Eval stays at or under half of node time [NN12, NQ4]. Per node, that's a few col
 | NM10 | Board-only control: the same net without relation inputs, trained on the same data | G3 |
 | NM11 | Kairos at a pinned commit as an optional outside yardstick, run as a separate program | — |
 | NM12 | Three-way check: board-only, plus attack relations, plus defence relations, trained on the same data and compared on held-out loss before any match | G2 |
+| NM13 | Test matches on GitHub Actions: shards under six hours, both engines on the same runner with paired openings, shard results merged by the runner [NM7] | G3 |
 
 ### 12.2 Predictions
 
@@ -436,6 +439,7 @@ Ideas only, no code [NF12]. Each enters as a provisional decision or an arm.
 | dlshogi | Inputs include squares attacked per piece type and attacker counts per square | Arm NX20 |
 | YaneuraOu | NNUE began here, with king-relative inputs (HalfKP: 81 king squares × 1,548 piece-squares), on a shogi port of Stockfish's search | Backs NX14, and Stockfish-style search in a game with many moves per position |
 | Shogi engines | Proof-number mate solvers (df-pn) beside the main search | Arm NX21 |
+| Kairos | Test matches and relabelling on GitHub Actions, split into 40 shards of under six hours | Test matches on Actions [NM13]; self-play shards [ND12] |
 
 Not taken: training on other engines' evaluations, MCTS or policy-led search, and GPU transformers [NF5, NF8, NF9].
 
@@ -451,6 +455,7 @@ Sources:
 - [Temporal-5D rulebook](https://github.com/Silicon-Spider/temporal-5d/blob/main/docs/rules/README.md)
 - [Kairos commit history](https://github.com/FirePlank/5d-chess-engine/commits/main/)
 - [Kairos test-match branch](https://github.com/FirePlank/5d-chess-engine/commits/sprt/)
+- [Kairos workflows](https://github.com/FirePlank/5d-chess-engine/tree/main/.github/workflows)
 - [MageOfficial/t0database](https://github.com/MageOfficial/t0database)
 - [Stockfish 19](https://stockfishchess.org/blog/2026/stockfish-19/)
 - [Stockfish 18](https://stockfishchess.org/blog/2026/stockfish-18/)
@@ -464,6 +469,10 @@ Sources:
 - [YaneuraOu, Chessprogramming wiki](https://www.chessprogramming.org/YaneuraOu)
 - [HalfKP dimensions (rshogi-core)](https://docs.rs/crate/rshogi-core/0.2.4/source/src/nnue/network_halfkp.rs)
 - [Mate Search, Chessprogramming wiki](https://www.chessprogramming.org/Mate_Search)
+- [GitHub Actions billing](https://docs.github.com/en/actions/reference/usage-limits-billing-and-administration)
+- [GitHub Actions limits](https://docs.github.com/en/actions/reference/limits)
+- [GitHub-hosted runner specs](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)
+- [GitHub additional product terms](https://docs.github.com/en/site-policy/github-terms/github-terms-for-additional-products-and-features)
 
 ## 14. Phases and gates
 
@@ -475,9 +484,9 @@ Sources:
 | --- | --- | --- |
 | 0 · Copy and review | Copy the rules engine at a pinned commit; import t0database; cut bucket edges; count live relation features; write review findings | G0: copied tests and gate pass unchanged in the new repo; displacement and Δt edges cut from t0database; relation table trimmed; gen-1 variants confirmed; baseline speeds recorded |
 | 1 · Optimise and build | Review checklist, one item at a time; net plumbing, lazy board state, caches and SIMD with the bootstrap net; search v1 | G1: tests and gate pass after every item; incremental equals from-scratch [NM2]; SIMD checksums agree [NM4]; eval ≤ 50% of node time [NN12]; attack-channel cost recorded, with and without defence [NM6] |
-| 2 · Gen 1 | Bootstrap self-play with depth caps; trainer, featuriser and integer reference | G2: at least 10M quiet positions; parity [NM3]; offline gate passed [NM9]; three-way check run [NM12] |
-| 3 · Integrate | Gen-1 net in the search; ablations of the imported heuristics; the quiescence arm; time management; board-only control | G3: gen 1 beats the bootstrap net by test match [NQ1]; each imported heuristic confirmed or dropped; board-only control measured [NQ2] |
-| 4 · Generations | Self-play with the latest net, three-generation window, rescoring | G4, each generation: promoted only on a test-match win [NL6] |
+| 2 · Gen 1 | Bootstrap self-play with depth caps, plus optional overflow shards on Actions; trainer, featuriser and integer reference | G2: at least 10M quiet positions; parity [NM3]; offline gate passed [NM9]; three-way check run [NM12] |
+| 3 · Integrate | Gen-1 net in the search; the test-match runner, locally and on Actions; ablations of the imported heuristics; the quiescence arm; time management; board-only control | G3: gen 1 beats the bootstrap net by test match [NQ1]; each imported heuristic confirmed or dropped; board-only control measured [NQ2] |
+| 4 · Generations | Self-play with the latest net, three-generation window, rescoring; test matches on Actions; training on the desktop | G4, each generation: promoted only on a test-match win [NL6] |
 | 5 · Release | AVX2, AVX-512, NEON and WASM builds; packaged nets; NETS.md | Checksums agree on every target [NM4] |
 
 ### 14.1 Phase 0 brief

@@ -1,0 +1,34 @@
+// Chronos provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
+//   source: engine/src/zobrist.cpp
+//   commit: c8a9c490bfde650466609531f8083d69513c6036
+//   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
+//   state:  unchanged: below this header the file is byte for byte the source
+// The 5D Zobrist key from scratch (the incremental path is in t5d/zobrist.hpp
+// and Multiverse's edits).
+
+#include "t5d/zobrist.hpp"
+
+#include <cstddef>
+
+#include "t5d/board.hpp"
+#include "t5d/multiverse.hpp"
+
+namespace t5d::zobrist {
+
+std::uint64_t key_from_scratch(const Multiverse& multiverse) {
+  Accumulator sum;
+  for (const TimelineRef& t : multiverse.timelines()) {
+    sum.add_timeline(t->position(), t->creator());
+    const BoardSequence& boards = t->boards();
+    for (std::size_t k = 0; k < boards.size(); ++k) {
+      const Board& board = *boards[k];
+      const bool head = k + 1 == boards.size();
+      sum.add_board(keyed_content_hash(content_hash_from_scratch(board), board.en_passant(), head),
+                    t->position(), t->first_half_turn() + static_cast<int>(k));
+    }
+  }
+  return sum.key(multiverse.to_move(), multiverse.ruleset(), multiverse.even(),
+                 multiverse.board_size());
+}
+
+}  // namespace t5d::zobrist

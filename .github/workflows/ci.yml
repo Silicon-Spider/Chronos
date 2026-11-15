@@ -1,0 +1,163 @@
+# CI: build the engine and run the copied tests on every push (Phase 0; NE7).
+# Every step is a plain command that runs the same way on the desktop.
+# No submodules and no oracle builds: the harness runs only the checks that need
+# no oracle engine, and the ones it can't run are listed in docs/gates/G0.md.
+
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: linux (${{ matrix.compiler }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - compiler: gcc
+            cxx: g++
+          - compiler: clang
+            cxx: clang++
+    env:
+      PY: python3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      - name: Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build
+          ${{ matrix.cxx }} --version
+          cmake --version
+          python3 --version
+      - name: Configure
+        run: cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=${{ matrix.cxx }} -DCHRONOS_WERROR=ON
+      - name: Build
+        run: cmake --build build/engine
+      - name: Copied tests
+        run: $PY tools/run_tests.py --exe build/engine/t5d-tests
+      - name: Provenance of the copied files
+        run: $PY tools/check_provenance.py
+      - name: Near-mate bench smoke test
+        run: build/engine/chronos-bench --quick --sections mate --no-pin
+      - name: Harness self-test
+        run: $PY oracles/harness.py selftest
+      - name: Harness static checks
+        # verify runs every static check. Without the oracle checkouts (Chronos has no
+        # submodules: NS2, NF12) three of them can't pass. This step requires exactly
+        # those findings and nothing else (docs/gates/G0.md).
+        run: |
+          set +e
+          $PY oracles/harness.py verify --tracked-only > verify.txt 2>&1
+          echo "verify exit status $?"
+          cat verify.txt
+          set -e
+          awk '/^$/{exit} {print}' verify.txt > static.txt
+          grep -E '^[a-z ]+: ' static.txt > sections.txt
+          grep -E '^  \[' static.txt | sed -E 's/^  \[([a-z-]+)\].*/\1/' | sort | uniq -c | sed -E 's/^ +//' > codes.txt
+          printf '%s\n' 'pins: 5 problem(s)' 'corpus: 37 problem(s)' 'known divergences: ok' 'rulebook: ok' 'boundary: 5 problem(s)' 'provenance: ok' 'engine baseline: ok' 'golden observations: ok' > expected-sections.txt
+          printf '%s\n' '5 copy-check-skipped' '5 missing-submodule' '37 record-unreadable' > expected-codes.txt
+          diff expected-sections.txt sections.txt
+          diff expected-codes.txt codes.txt
+      - name: Gate, restricted to the four local records
+        # The only gate run that reaches the engine without oracle checkouts. It is never a
+        # tier verdict and exits 1 on the checkout findings; the engine's part must be clean.
+        run: |
+          set +e
+          $PY oracles/harness.py gate --tier commit --tracked-only --record local/stalemate --record local/checkmate --record local/stalemate-with-a-past --record local/ignores-check > gate.txt 2>&1
+          echo "gate exit status $?"
+          cat gate.txt
+          set -e
+          grep -q ' ok   engine vs oracles' gate.txt
+          grep -q ': 0 findings against the engine;' gate.txt
+          grep -q ': 0 declined$' gate.txt
+      - name: The build wrote nothing under the harness
+        run: test -z "$(git status --porcelain -- oracles/)"
+
+  windows:
+    name: windows (msys2 ucrt64)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    env:
+      PY: python
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false
+      # The compiler, CMake and Ninja come from MSYS2 ucrt64 (NE6). Python and git are
+      # the native Windows ones, as on the desktop: MSYS2's own git glob-expands its
+      # arguments when a native program starts it (HEAD^{tree} arrives as HEAD^tree),
+      # and MSYS2's Python mixes path separators, which breaks the harness's tests.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          path-type: inherit
+          install: >-
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-cmake
+            mingw-w64-ucrt-x86_64-ninja
+      - name: Tools
+        run: |
+          which g++ cmake ninja python git
+          g++ --version
+          cmake --version
+          python --version
+          git --version
+      - name: Configure
+        run: cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCHRONOS_WERROR=ON
+      - name: Build
+        run: cmake --build build/engine
+      - name: Copied tests
+        run: $PY tools/run_tests.py --exe build/engine/t5d-tests
+      - name: Provenance of the copied files
+        run: $PY tools/check_provenance.py
+      - name: Near-mate bench smoke test
+        run: build/engine/chronos-bench --quick --sections mate --no-pin
+      - name: Harness self-test
+        run: $PY oracles/harness.py selftest
+      - name: Harness static checks
+        # As on Linux: exactly the findings the missing oracle checkouts explain.
+        run: |
+          set +e
+          $PY oracles/harness.py verify --tracked-only > verify.txt 2>&1
+          echo "verify exit status $?"
+          cat verify.txt
+          set -e
+          awk '/^$/{exit} {print}' verify.txt > static.txt
+          grep -E '^[a-z ]+: ' static.txt > sections.txt
+          grep -E '^  \[' static.txt | sed -E 's/^  \[([a-z-]+)\].*/\1/' | sort | uniq -c | sed -E 's/^ +//' > codes.txt
+          printf '%s\n' 'pins: 5 problem(s)' 'corpus: 37 problem(s)' 'known divergences: ok' 'rulebook: ok' 'boundary: 5 problem(s)' 'provenance: ok' 'engine baseline: ok' 'golden observations: ok' > expected-sections.txt
+          printf '%s\n' '5 copy-check-skipped' '5 missing-submodule' '37 record-unreadable' > expected-codes.txt
+          diff expected-sections.txt sections.txt
+          diff expected-codes.txt codes.txt
+      - name: Gate, restricted to the four local records
+        # The only gate run that reaches the engine without oracle checkouts. It is never a
+        # tier verdict and exits 1 on the checkout findings; the engine's part must be clean.
+        run: |
+          set +e
+          $PY oracles/harness.py gate --tier commit --tracked-only --record local/stalemate --record local/checkmate --record local/stalemate-with-a-past --record local/ignores-check > gate.txt 2>&1
+          echo "gate exit status $?"
+          cat gate.txt
+          set -e
+          grep -q ' ok   engine vs oracles' gate.txt
+          grep -q ': 0 findings against the engine;' gate.txt
+          grep -q ': 0 declined$' gate.txt
+      - name: The build wrote nothing under the harness
+        run: test -z "$(git status --porcelain -- oracles/)"

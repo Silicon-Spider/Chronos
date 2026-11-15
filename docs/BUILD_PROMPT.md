@@ -73,20 +73,20 @@ The G1 report gives eval's share of node time [NN12] and the attack channel's co
 ### Phase 2: Gen 1 (§9, §10), ending at G2
 
 1. Featuriser through the C API and ctypes [NL1]. PyTorch trainer with an exact integer reference [NL2], factorised features [NL3], quantisation-aware training [NL7] and auxiliary targets [NL8]. It must train on a desktop CPU [NL4].
-2. Opening generator plus t0database starts [ND4]. Self-play with the bootstrap net, depth caps and the quiet filter [ND2, ND6, ND10], writing records with provenance [ND1, ND7], to at least 10M quiet positions. Measure the datagen rate first and set the gen-1 node budget from it.
+2. Opening generator plus t0database starts [ND4]. Self-play with the bootstrap net, depth caps and the quiet filter [ND2, ND6, ND10], writing records with provenance [ND1, ND7], to at least 10M quiet positions. Measure the datagen rate first and set the gen-1 node budget from it. If the desktop alone is too slow, add the Actions datagen workflow described under *Compute* [ND12].
 3. Labels at λ 0.2 [ND5], with oversampling [ND11].
 4. The offline gate [NM9], parity [NM3] and the three-way check [NM12].
 
 ### Phase 3: Integrate (§6, §12), ending at G3
 
-1. The test-match runner: paired openings, pentanomial GSPRT, results bucketed by active timelines, openings from t0database [NM7, NM8].
+1. The test-match runner: paired openings, pentanomial GSPRT, results bucketed by active timelines, openings from t0database [NM7, NM8]. It runs locally and as a GitHub Actions workflow (see *Compute*) [NM13].
 2. Gen 1 against the bootstrap net [NQ1], and the board-only control [NM10, NQ2, NQ3].
 3. Ablations of every imported search heuristic (§6), the quiescence arm NX1 [NQ5], time management, and a separate match per gen-1 variant [NI7].
 4. The tactics and mate sets [NM5].
 
 ### Phase 4: Generations, with G4 at each generation
 
-Self-play with the latest promoted net on a three-generation window, with rescoring [ND3, ND9]. Promote a net only on a test-match win, keep the last good net [NL6], and log every net in `NETS.md`. Run the §15.1 arms one at a time, in ID order except NX7 (correction history), which runs first. Kairos at a pinned commit is an optional outside yardstick, run only as a separate program [NM11, NQ6].
+Self-play with the latest promoted net on a three-generation window, with rescoring [ND3, ND9]. Test matches run on Actions, and training stays on the desktop [NM13, NL4]. Promote a net only on a test-match win, keep the last good net [NL6], and log every net in `NETS.md`. Run the §15.1 arms one at a time, in ID order except NX7 (correction history), which runs first. Kairos at a pinned commit is an optional outside yardstick, run only as a separate program [NM11, NQ6].
 
 ### Phase 5: Release
 
@@ -95,6 +95,14 @@ WASM through Emscripten, NEON, packaged nets, and checksums that agree on every 
 ## Long jobs
 
 Self-play, training and test matches run for hours or days. Make each one resumable from checkpoints, log progress to a file, and run it in the background. Check on it rather than babysitting it, so a crash or a new session can pick it up.
+
+## Compute
+
+- Your desktop is the default for everything, and training always runs there [NL4].
+- GitHub Actions runs CI on every push and adds spare capacity for test matches from Phase 3 and self-play shards from Phase 2 [NE7, NM13, ND12]. Chronos is public, so standard runners are free: 4 CPUs, 16 GB of RAM, 14 GB of disk and a 6-hour cap per job, with up to 20 jobs at once on GitHub's Free plan.
+- Split the work into shards that finish well under six hours. A match shard plays both engines on the same runner with paired openings. A datagen shard uploads its records as an artifact, and the desktop downloads, checks and merges them. Every record names the machine or runner that made it [ND7].
+- Every Actions job also runs locally with the same command; nothing may depend on Actions being available.
+- Stay inside GitHub's terms: use Actions only for Chronos's builds, tests, test matches and self-play, and never put a disproportionate load on GitHub's servers. Each match or datagen workflow runs one instance at a time (a concurrency group) and never on a schedule.
 
 ## Records
 
@@ -126,7 +134,8 @@ Push what you have and report when:
 - evidence says a committed decision is wrong (say what you measured, what you'd change and which register rows it affects);
 - a hard rule blocks progress;
 - gen 1 would need more than a week of machine time at the chosen budget;
-- Phase 5 needs a net size budget for the browser build.
+- Phase 5 needs a net size budget for the browser build;
+- GitHub cancels Actions jobs or restricts the repo (move that work back to the desktop first).
 
 ## Environment
 
