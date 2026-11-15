@@ -70,6 +70,18 @@ jobs:
           printf '%s\n' '5 copy-check-skipped' '5 missing-submodule' '37 record-unreadable' > expected-codes.txt
           diff expected-sections.txt sections.txt
           diff expected-codes.txt codes.txt
+      - name: Gate, restricted to the four local records
+        # The only gate run that reaches the engine without oracle checkouts. It is never a
+        # tier verdict and exits 1 on the checkout findings; the engine's part must be clean.
+        run: |
+          set +e
+          $PY oracles/harness.py gate --tier commit --tracked-only --record local/stalemate --record local/checkmate --record local/stalemate-with-a-past --record local/ignores-check > gate.txt 2>&1
+          echo "gate exit status $?"
+          cat gate.txt
+          set -e
+          grep -q ' ok   engine vs oracles' gate.txt
+          grep -q ': 0 findings against the engine;' gate.txt
+          grep -q ': 0 declined$' gate.txt
       - name: The build wrote nothing under the harness
         run: test -z "$(git status --porcelain -- oracles/)"
 
@@ -135,5 +147,17 @@ jobs:
           printf '%s\n' '5 copy-check-skipped' '5 missing-submodule' '37 record-unreadable' > expected-codes.txt
           diff expected-sections.txt sections.txt
           diff expected-codes.txt codes.txt
+      - name: Gate, restricted to the four local records
+        # The only gate run that reaches the engine without oracle checkouts. It is never a
+        # tier verdict and exits 1 on the checkout findings; the engine's part must be clean.
+        run: |
+          set +e
+          $PY oracles/harness.py gate --tier commit --tracked-only --record local/stalemate --record local/checkmate --record local/stalemate-with-a-past --record local/ignores-check > gate.txt 2>&1
+          echo "gate exit status $?"
+          cat gate.txt
+          set -e
+          grep -q ' ok   engine vs oracles' gate.txt
+          grep -q ': 0 findings against the engine;' gate.txt
+          grep -q ': 0 declined$' gate.txt
       - name: The build wrote nothing under the harness
         run: test -z "$(git status --porcelain -- oracles/)"

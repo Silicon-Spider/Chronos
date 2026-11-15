@@ -30,11 +30,11 @@ ROOT = Path(__file__).resolve().parent.parent
 # Tests that need a program Chronos doesn't build, with the reason (docs/gates/G0.md).
 SKIP = {
     "measure_exe_turns_on_hand_written_records":
-        "runs t5d-measure, which is not copied (it includes t5d/expand.hpp, spec 3.2)",
+        "runs t5d-measure (not copied: it includes t5d/expand.hpp, spec 3.2) on engine/testdata/turn-width (not copied)",
     "measure_exe_turn_summary_classifies_records":
-        "runs t5d-measure, which is not copied (it includes t5d/expand.hpp, spec 3.2)",
+        "runs t5d-measure (not copied: it includes t5d/expand.hpp, spec 3.2) on engine/testdata/turn-width (not copied)",
     "measure_exe_turn_summary_ranges_at_their_edges":
-        "runs t5d-measure, which is not copied (it includes t5d/expand.hpp, spec 3.2)",
+        "runs t5d-measure (not copied: it includes t5d/expand.hpp, spec 3.2) on engine/testdata/turn-width (not copied)",
 }
 
 TEST_DEF = re.compile(r"^\s*TEST\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)", re.M)

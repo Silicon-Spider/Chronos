@@ -128,8 +128,11 @@ def main() -> int:
         by_side[(fam, r[ix["passed"]], r[ix["own"]])] += n
         if fam != "same":
             fam_hist[fam][distance(fam, dl, dtt)] += n
-            half = {"timeline": abs(dl), "time": abs(dth), "both": max(abs(dl), abs(dth))}[fam]
-            fam_hist_half[fam][half] += n
+        # The spec's literal reading: family and distance both from (dL, dTh), half-turns
+        # between the real boards.
+        fam_h = family(dl, dth)
+        if fam_h != "same":
+            fam_hist_half[fam_h][distance(fam_h, dl, dth)] += n
     all_rel = sum(totals.values())
     print(f"## Relations over the start games\n")
     print(f"{all_rel:,} relations: " + ", ".join(f"{k} {v:,} ({100 * v / all_rel:.1f}%)" for k, v in totals.items()))
@@ -159,12 +162,19 @@ def main() -> int:
               f"{', '.join(f'{x:,}' for x in c)} | {', '.join(f'{100 * x / tot:.1f}%' for x in c)} | "
               f"{', '.join(label(spec_edges[f], i) for i in range(nb[f]))} | {', '.join(f'{x:,}' for x in cs)} |")
     # the spec's half-turn reading, for the record
-    half_spec = {f: bucket_counts(fam_hist_half[f], spec_edges[f]) for f in ("time", "both")}
-    print(f"\nWith the spec's edges in half-turns: time only {half_spec['time']}, both {half_spec['both']}.")
+    half_spec = {f: bucket_counts(fam_hist_half[f], spec_edges[f]) for f in nb}
+    half_edges = {f: best_split(fam_hist_half[f], nb[f]) for f in nb}
+    moved = sum(fam_hist["timeline"].values()) - sum(fam_hist_half["timeline"].values())
+    print(f"\nThe spec's literal reading (family and distance from half-turns between the real boards): "
+          f"its edges give timeline {half_spec['timeline']}, time {half_spec['time']}, both {half_spec['both']}; "
+          f"the same rule picks {half_edges}; {moved:,} relations change family from timeline only to both.")
+    out["half_turn_reading"] = {"spec_edge_counts": half_spec, "best_edges": half_edges,
+                                "timeline_to_both": moved,
+                                "family_totals": {f: sum(fam_hist_half[f].values()) for f in nb}}
     out["edges"] = edges
     out["edge_counts"] = {f: bucket_counts(fam_hist[f], edges[f]) for f in nb}
     out["spec_edge_counts_turns"] = {f: bucket_counts(fam_hist[f], spec_edges[f]) for f in nb}
-    out["spec_edge_counts_half_turns"] = half_spec
+
     classes = ["same board"] + [f"{f} {label(edges[f], i)}" for f in nb for i in range(nb[f])]
     out["classes"] = classes
     print("\nClasses: " + "; ".join(classes))
@@ -277,7 +287,8 @@ def main() -> int:
     print(f"| Symmetric same-kind enemy pairs, counted once | {symmetric:,} |")
     print(f"| **Live after trimming** | **{live:,}** |")
     print(f"| Live, gen-1 pieces only (P N B R Q K; of {gen1_full:,}) | {gen1_live:,} |")
-    print(f"| Fired at least once in the start games | {len(seen):,} |")
+    print(f"| Live rows that fire at least once in the start games | {len(seen & live_rows):,} |")
+    print(f"| Index rows that fire, counting the dropped mirrored halves | {len(seen):,} |")
     for why, n in dead_reason.most_common():
         print(f"- {why}: {n:,}")
     print(f"\nRelations in the start games on a dropped row: {seen_rel[False]:,} of {sum(seen_rel.values()):,}, "
@@ -287,7 +298,7 @@ def main() -> int:
         print("  IMPOSSIBLE BUT SEEN:", row)
     assert not seen_impossible, "a row the probe calls impossible fired in the data"
     out["rows"] = {"full": full, "impossible": impossible, "symmetric_once": symmetric, "live": live,
-                   "gen1_full": gen1_full, "gen1_live": gen1_live, "fired_in_start_games": len(seen),
+                   "gen1_full": gen1_full, "gen1_live": gen1_live, "fired_in_start_games": len(seen), "live_fired_in_start_games": len(seen & live_rows),
                    "dead_reasons": dict(dead_reason), "relations_on_dropped_rows": seen_rel[False],
                    "seen_symmetric_rows": len(seen_symmetric), "seen_impossible_rows": len(seen_impossible)}
     # reachability summary per kind

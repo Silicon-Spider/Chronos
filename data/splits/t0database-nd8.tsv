@@ -1,8 +1,10 @@
 # t0database split by game (spec ND8): start games and held-out games.
 # Written by tools/split_t0db.py, seed 20261108, from data/t0database/Data.csv (SHA-256 37fb7c1ce46efb27d42a8b9d0b230df13faff1b36bef24af8c15ba5c8a6c7a4e)
 # and the parse-mode replay of every record by chronos-relhist.
-# cluster: the smallest GameNum of the rows that record the same game (identical move text
-# without clocks, or equal or prefix sequences of turn-start positions); a cluster is never split.
+# cluster: the smallest GameNum of the rows that record the same game: identical move text without
+# clocks, equal turn-start sequences of complete records, or a shorter or refused record whose turn
+# starts open exactly one game that names the same players on the same day or shares at least 20
+# turn starts with it. A cluster is never split.
 # usable: usable = a complete record that neither equals nor is a prefix of a longer one
 # (Temporal-5D's rule for its 692 games); duplicate = complete, but equal to or a prefix of
 # a record kept before it, longest first; refused = does not replay to the end in parse mode.
@@ -512,7 +514,7 @@ game_num	set	cluster	usable
 503	start	503	usable
 504	heldout	504	usable
 505	start	505	usable
-506	start	506	usable
+506	heldout	462	usable
 507	heldout	461	duplicate
 508	start	370	duplicate
 509	start	509	usable
@@ -586,7 +588,7 @@ game_num	set	cluster	usable
 577	start	577	usable
 578	start	578	usable
 579	start	579	usable
-580	heldout	580	usable
+580	start	580	usable
 581	start	581	usable
 582	heldout	582	usable
 583	heldout	583	usable
