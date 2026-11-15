@@ -6,9 +6,10 @@ Conventions:
 
 - **Machine.** CPU model, cores and logical processors, RAM and OS, and whether the machine was otherwise quiet.
 - **Build.** Compiler and version, build type and flags, as the tool prints them.
-- **Commit.** The Chronos commit the binaries were built from.
+- **Commit.** The Fractal commit the binaries were built from.
 - **Rates.** Medians over interleaved rounds, with the slowest and fastest round in brackets, unless an entry says otherwise. Percentiles are nearest rank.
 - **Comparison.** Temporal-5D's figures quoted in the spec came from the same CPU model (Ryzen 9 9900X), so the Phase 0 entries compare against them directly.
+- **Names.** The project was called Chronos until 15 November 2026, and this log now gives the current names throughout. At a commit from before the rename, the tools are `chronos-bench` and `chronos-relhist`, and the CMake option is `CHRONOS_WERROR`.
 
 ## 1. Phase 0 baselines: movegen, turn generation, the 5-timeline hypercuboid case (2026-11-15)
 
@@ -18,14 +19,14 @@ The copied rules engine, unchanged apart from the capi removal, measured before 
   - The machine was quiet: 1.2% busy just before the run (PowerShell `Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 2 -MaxSamples 3`, averaged). The bench itself doesn't sample load during the run.
   - One thread, pinned to logical processor 2, priority above normal.
 - **Build:** GNU g++ 16.2.0 (MSYS2 ucrt64), Release, `-O2 -DNDEBUG`, statically linked.
-- **Commit:** Chronos `6364eb0` on `phase-0-copy`; engine copied from Temporal-5D `c8a9c49`.
+- **Commit:** Fractal `6364eb0` on `phase-0-copy`; engine copied from Temporal-5D `c8a9c49`.
 - **Commands:**
 
   ```
-  cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=C:/msys64/ucrt64/bin/g++.exe -DCHRONOS_WERROR=ON
+  cmake -S . -B build/engine -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=C:/msys64/ucrt64/bin/g++.exe -DFRACTAL_WERROR=ON
   cmake --build build/engine
   python -I data/t0database/to_5dpgn.py build/t0db
-  build/engine/chronos-bench --records build/t0db --json build/g0/bench.json
+  build/engine/fractal-bench --records build/t0db --json build/g0/bench.json
   python -I tools/bench/turngen_table.py build/g0/bench.json
   ```
 

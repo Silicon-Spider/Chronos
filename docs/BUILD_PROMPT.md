@@ -1,10 +1,10 @@
-# Chronos build prompt
+# Fractal build prompt
 
-Paste this into Claude Code at the root of the Chronos folder, or tell it: "Read docs/BUILD_PROMPT.md and follow it." The first session uses `docs/INITIAL_PROMPT.md` instead, which stops at G0 for review.
+Paste this into Claude Code at the root of the Fractal folder, or tell it: "Read docs/BUILD_PROMPT.md and follow it." The first session uses `docs/INITIAL_PROMPT.md` instead, which stops at G0 for review.
 
 ## Your job
 
-Build **Chronos**, a standalone, CPU-only engine for 5D Chess With Multiverse Time Travel, written in C++20. It searches whole turns with alpha-beta (PVS) and scores positions with an NNUE that reads the boards directly. There is no hand-crafted evaluation anywhere. All code goes to https://github.com/Silicon-Spider/Chronos.
+Build **Fractal**, a standalone, CPU-only engine for 5D Chess With Multiverse Time Travel, written in C++20. It searches whole turns with alpha-beta (PVS) and scores positions with an NNUE that reads the boards directly. There is no hand-crafted evaluation anywhere. All code goes to https://github.com/Silicon-Spider/Fractal.
 
 You work through six phases in order (spec §14), each ending at a gate. Keep going from gate to gate on your own; stop only for the reasons under *When to stop*.
 
@@ -15,13 +15,13 @@ You work through six phases in order (spec §14), each ending at a gate. Keep go
 - `CLAUDE.md`: standing rules for every session in this repo.
 - `docs/img/`: the architecture, network and roadmap diagrams.
 
-The biggest risk is in §7.6. Kairos's board-only net lost 255 Elo because nothing in it linked boards. Chronos bets that attack relations replace the hand-crafted counts Kairos relied on, and the three-way check at G2 and the board-only control at G3 measure that bet. If the result is weak, don't patch it with hand-crafted terms; arm NX2 is the only sanctioned fallback.
+The biggest risk is in §7.6. Kairos's board-only net lost 255 Elo because nothing in it linked boards. Fractal bets that attack relations replace the hand-crafted counts Kairos relied on, and the three-way check at G2 and the board-only control at G3 measure that bet. If the result is weak, don't patch it with hand-crafted terms; arm NX2 is the only sanctioned fallback.
 
 ## Step 0: put the docs on GitHub
 
 This folder holds the docs but may not be a git repository yet. The remote already has `README.md` and `LICENSE` (GPL-3.0) on `main`.
 
-1. If the folder isn't a git repository: `git init -b main`, `git remote add origin https://github.com/Silicon-Spider/Chronos.git`, `git fetch origin`, then `git reset origin/main`. That adopts the remote history and keeps the files here.
+1. If the folder isn't a git repository: `git init -b main`, `git remote add origin https://github.com/Silicon-Spider/Fractal.git`, `git fetch origin`, then `git reset origin/main`. That adopts the remote history and keeps the files here.
 2. Commit everything here ("Add design spec, decision register and build prompt") and push to `main`.
 3. Confirm the push landed before writing any code.
 
@@ -34,11 +34,11 @@ Never break these. Each cites the decisions it comes from.
 3. **No other engine's code.** Kairos, Stockfish, Lc0, KataGo, dlshogi, YaneuraOu and the oracle engines are ideas only; write your own implementation [NF12].
 4. **Copied code proves itself first.** Its tests and the gate pass unchanged before you change anything, and again after every change [P8, NM1].
 5. **One evaluator.** No hand-crafted eval as an input, overlay, blend, fallback, lazy-eval gate or second net [P1, P4, NF1, NF2]. Before training, the bootstrap net is the material path alone [NN8, NN13]. Unweighted rule-fact counts appear only in arm NX2.
-6. **Self-taught.** Nets train only on Chronos's own searches and game results. t0database supplies start positions and a held-out check, never labels [P6, NF5].
+6. **Self-taught.** Nets train only on Fractal's own searches and game results. t0database supplies start positions and a held-out check, never labels [P6, NF5].
 7. **Legal turns come from the turn generator.** The search never calls exact per-move legality (`legal`), and a generator stopped by its budget never proves mate or stalemate [NF13, NT5].
 8. **Rules live in the rules engine** [P2, NF6]. **Store positions, never features** [ND1, NF7].
 9. **Exactness.** Every incremental update equals a from-scratch rebuild, checked at every node in tests [NM2]. The integer eval is bit-identical across SIMD targets and the Python reference [NN11, NM3, NM4]. A single-thread fixed-node search is deterministic [NE4].
-10. **Measure, don't assume.** A heuristic imported from Kairos or chess stays only if an ablation test match in Chronos confirms it [P5]. Record each prediction (NQ1–NQ6) before its test runs.
+10. **Measure, don't assume.** A heuristic imported from Kairos or chess stays only if an ablation test match in Fractal confirms it [P5]. Record each prediction (NQ1–NQ6) before its test runs.
 11. **Committed decisions don't change silently.** If evidence says one is wrong, stop and write a proposal. Provisional decisions are settled by the gate or arm their row names, and the gate report records the outcome.
 12. **Licence.** GPL-3.0, sole copyright [NE5]. Keep t0database's MIT licence file with the data.
 
@@ -99,10 +99,10 @@ Self-play, training and test matches run for hours or days. Make each one resuma
 ## Compute
 
 - Your desktop is the default for everything, and training always runs there [NL4].
-- GitHub Actions runs CI on every push and adds spare capacity for test matches from Phase 3 and self-play shards from Phase 2 [NE7, NM13, ND12]. Chronos is public, so standard runners are free: 4 CPUs, 16 GB of RAM, 14 GB of disk and a 6-hour cap per job, with up to 20 jobs at once on GitHub's Free plan.
+- GitHub Actions runs CI on every push and adds spare capacity for test matches from Phase 3 and self-play shards from Phase 2 [NE7, NM13, ND12]. Fractal is public, so standard runners are free: 4 CPUs, 16 GB of RAM, 14 GB of disk and a 6-hour cap per job, with up to 20 jobs at once on GitHub's Free plan.
 - Split the work into shards that finish well under six hours. A match shard plays both engines on the same runner with paired openings. A datagen shard uploads its records as an artifact, and the desktop downloads, checks and merges them. Every record names the machine or runner that made it [ND7].
 - Every Actions job also runs locally with the same command; nothing may depend on Actions being available.
-- Stay inside GitHub's terms: use Actions only for Chronos's builds, tests, test matches and self-play, and never put a disproportionate load on GitHub's servers. Each match or datagen workflow runs one instance at a time (a concurrency group) and never on a schedule.
+- Stay inside GitHub's terms: use Actions only for Fractal's builds, tests, test matches and self-play, and never put a disproportionate load on GitHub's servers. Each match or datagen workflow runs one instance at a time (a concurrency group) and never on a schedule.
 
 ## Records
 
@@ -113,7 +113,7 @@ Self-play, training and test matches run for hours or days. Make each one resuma
 
 ## Git
 
-- Remote: https://github.com/Silicon-Spider/Chronos. Push all code there.
+- Remote: https://github.com/Silicon-Spider/Fractal. Push all code there.
 - One branch per phase (`phase-0-copy`, `phase-1-build` and so on). Make small commits that say why, and push often.
 - At each gate, open a pull request into `main` with the gate report as its description. Merge it yourself once CI is green and every criterion passes, unless the report needs a decision from Fergus; then leave it open and stop.
 - Keep self-play data, training sets and net files out of git. Record their paths and SHA-256 hashes in `NETS.md`; nets ship as release assets in Phase 5.

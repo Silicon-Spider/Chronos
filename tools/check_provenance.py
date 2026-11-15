@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check every file Chronos copied from Temporal-5D against PROVENANCE.md.
+"""Check every file Fractal copied from Temporal-5D against PROVENANCE.md.
 
 For each row of the "Copied files" table:
 - a "record only" file must hash to its source SHA-256;
@@ -55,7 +55,7 @@ def body_below_header(path: str, data: bytes) -> tuple[bytes | None, str]:
         if not all(h.startswith(prefix) for h in header):
             return None, "no provenance header"
         header = [h[len(prefix):] for h in header]
-    expect = [b"Chronos provenance: copied from Temporal-5D",
+    expect = [b"Fractal provenance: copied from Temporal-5D",
               b"  source: " + path.encode(), b"  commit: " + PIN.encode(), b"  copied: ", b"  state:  "]
     for got, want in zip(header, expect):
         if not got.startswith(want):

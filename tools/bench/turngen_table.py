@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Turn-generation figures for docs/MEASUREMENTS.md from chronos-bench's JSON.
+"""Turn-generation figures for docs/MEASUREMENTS.md from fractal-bench's JSON.
 
-chronos-bench prints its turn-generation table over all positions. A position with no
+fractal-bench prints its turn-generation table over all positions. A position with no
 legal turn (a mate or stalemate, or a pseudo-legal synthetic position) costs a proof of
 none instead of turns, so this script splits each set into positions with at least one
 legal turn and positions with none, from the per-position medians the bench writes
 (per_position = [first_us, turns27_us, done_us, turns, nodes, exhausted, stopped, refused]).
 
-Percentiles are nearest rank, as chronos-bench computes them: the p90 of n values is the
+Percentiles are nearest rank, as fractal-bench computes them: the p90 of n values is the
 ceil(0.9 n)-th smallest. Turns/s is pooled: all turns over all time.
 
 Usage: python tools/bench/turngen_table.py build/g0/bench.json

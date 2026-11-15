@@ -1,4 +1,4 @@
-# Chronos
+# Fractal
 
 A CPU-only engine for 5D Chess With Multiverse Time Travel: alpha-beta search over whole turns, scored by an NNUE that reads the boards themselves. Written in C++20.
 

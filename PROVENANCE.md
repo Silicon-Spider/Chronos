@@ -1,6 +1,6 @@
 # Provenance
 
-Chronos copies Temporal-5D's rules engine once, from one pinned commit, and never depends on Temporal-5D at build or run time (spec §3.1 and §3.4; decisions NR1, NR5 and NS2). This file records what was copied, from where, and what has changed since.
+Fractal copies Temporal-5D's rules engine once, from one pinned commit, and never depends on Temporal-5D at build or run time (spec §3.1 and §3.4; decisions NR1, NR5 and NS2). This file records what was copied, from where, and what has changed since.
 
 ## Source
 
@@ -27,9 +27,9 @@ The spec lists the modules, the 64 test files, the harness, the rulebook and t0d
 ## Not copied
 
 - Anything in spec §3.2: expand, labels, views, mcts, mcts_evaluators, selfplay, capi_search, scanner, guard, hunt, prover, ladder and assets.
-- The harness's five oracle submodules (the `oracles/third_party/*` gitlinks) and Temporal-5D's `.gitmodules`. Chronos has no submodules and fetches no oracle code (NS2, NF10, NF12).
-- Temporal-5D's other tools (`t5d-measure`, `t5d-bench`, `t5d-play` and the rest), `engine/testdata/`, `engine/build.py`, `engine/CMakeLists.txt` and `engine/cmake/`. Chronos has its own build (`CMakeLists.txt`).
-- Temporal-5D's `PROVENANCE.md`. The copied harness generated the inventory block at the end of this file in Chronos (`python oracles/harness.py provenance --write`).
+- The harness's five oracle submodules (the `oracles/third_party/*` gitlinks) and Temporal-5D's `.gitmodules`. Fractal has no submodules and fetches no oracle code (NS2, NF10, NF12).
+- Temporal-5D's other tools (`t5d-measure`, `t5d-bench`, `t5d-play` and the rest), `engine/testdata/`, `engine/build.py`, `engine/CMakeLists.txt` and `engine/cmake/`. Fractal has its own build (`CMakeLists.txt`).
+- Temporal-5D's `PROVENANCE.md`. The copied harness generated the inventory block at the end of this file in Fractal (`python oracles/harness.py provenance --write`).
 
 ## Changes since the copy
 
@@ -46,7 +46,7 @@ Kept on purpose, so that no retained function changes: the game handle's `expans
 
 ## Licences
 
-- Temporal-5D: GPL-3.0, by the same author as Chronos (NE5).
+- Temporal-5D: GPL-3.0, by the same author as Fractal (NE5).
 - t0database: MIT. The licence, `data/t0database/LICENSE`, stays with the data.
 - `oracles/drivers/ftxi/ftxi_driver.cpp` adapts code from ftxi's `tools/position_tools.cpp` under the BSD 2-Clause licence. The notice is inside the file. This conflicts with NF12; see `docs/gates/G0.md`.
 

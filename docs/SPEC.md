@@ -25,7 +25,7 @@ Draft of 7 November 2026. Nothing is built yet; Phase 0, copy and review, is nex
 2. Run well on CPU-only machines and weak GPUs, and later in the browser.
 3. Train on a desktop CPU; a GPU only speeds it up [NL4].
 
-**Gen-1 variants:** Standard, Turn Zero, Defended Pawn and Half Reflected, confirmed at G0 [NS5]. The engine is called Chronos; its repo is github.com/Silicon-Spider/Chronos.
+**Gen-1 variants:** Standard, Turn Zero, Defended Pawn and Half Reflected, confirmed at G0 [NS5]. The engine is called Fractal; its repo is github.com/Silicon-Spider/Fractal.
 
 ## 1. Engine at a glance
 
@@ -356,7 +356,7 @@ Eval stays at or under half of node time [NN12, NQ4]. Per node, that's a few col
 - **Determinism** [NE4]: a single-thread fixed-node search gives the same result on every run, compiler and SIMD target.
 - **Licence** [NE5]: GPL-3.0, sole copyright yours. t0database keeps its MIT licence file.
 - **Toolchain** [NE6]: C++20; g++ 13 or later, or clang; CMake and Ninja; on Windows, MSYS2 ucrt64, where g++ 16.2 is already set up.
-- **Compute** [NE7]: the desktop by default, and always for training [NL4]. GitHub Actions runs CI on every push and adds spare capacity for test matches from Phase 3 [NM13] and self-play shards from Phase 2 [ND12]. Chronos is public, so standard runners are free: 4 CPUs, 16 GB of RAM, 14 GB of disk and a 6-hour cap per job, with up to 20 jobs at once on GitHub's Free plan. Every Actions job also runs locally with the same command, and nothing depends on Actions being available. GitHub's terms allow Actions only for developing and testing the software in the repo, without a disproportionate load on its servers, so each match or datagen workflow runs one instance at a time and never on a schedule. Kairos runs its matches this way, in 40 shards of under six hours.
+- **Compute** [NE7]: the desktop by default, and always for training [NL4]. GitHub Actions runs CI on every push and adds spare capacity for test matches from Phase 3 [NM13] and self-play shards from Phase 2 [ND12]. Fractal is public, so standard runners are free: 4 CPUs, 16 GB of RAM, 14 GB of disk and a 6-hour cap per job, with up to 20 jobs at once on GitHub's Free plan. Every Actions job also runs locally with the same command, and nothing depends on Actions being available. GitHub's terms allow Actions only for developing and testing the software in the repo, without a disproportionate load on its servers, so each match or datagen workflow runs one instance at a time and never on a schedule. Kairos runs its matches this way, in 40 shards of under six hours.
 
 ## 12. Testing and predictions
 
@@ -493,7 +493,7 @@ Sources:
 
 For the coding agent. Deliver a G0 report, and change no copied code until G0 passes.
 
-1. Set up the repo, github.com/Silicon-Spider/Chronos, building with CMake and Ninja.
+1. Set up the repo, github.com/Silicon-Spider/Fractal, building with CMake and Ninja.
 2. Pin a Temporal-5D commit. Copy the modules in §3.1 with the internal headers they include, the 64 test files, the oracle harness, the rulebook, and data/t0database with its licence. Give each file a provenance header.
 3. Remove capi's expansion and label entry points and the record types only they use.
 4. Build, then run the copied tests and the gate unchanged. Record any failure; don't fix it yet.

@@ -1,7 +1,7 @@
-// Chronos provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
+// Fractal provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
 //   source: engine/tests/test_mcts_tree.cpp
 //   commit: c8a9c490bfde650466609531f8083d69513c6036
-//   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
+//   copied: 2026-11-08 (Fractal spec 3.1 and 3.4; decisions NR1, NR5)
 //   state:  unchanged: below this header the file is byte for byte the source
 // D2's tree form (t5d/mcts.hpp, TurnSplit::Tree; design spec §8.2 "Evaluating
 // at turn boundaries"): the ply split's tree with the turn-start priors

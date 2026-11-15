@@ -1,7 +1,7 @@
-// Chronos provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
+// Fractal provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
 //   source: engine/tests/test_movegen_timelines.cpp
 //   commit: c8a9c490bfde650466609531f8083d69513c6036
-//   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
+//   copied: 2026-11-08 (Fractal spec 3.1 and 3.4; decisions NR1, NR5)
 //   state:  unchanged: below this header the file is byte for byte the source
 // Pseudo-legal movement across timelines (rules reference J2-J4, J7, J8, 4.4,
 // 4.5, 4.9) and the pawn and brawn (4.6, 4.7; Q14, Q15).

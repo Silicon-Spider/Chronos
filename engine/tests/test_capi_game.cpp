@@ -1,7 +1,7 @@
-// Chronos provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
+// Fractal provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
 //   source: engine/tests/test_capi_game.cpp
 //   commit: c8a9c490bfde650466609531f8083d69513c6036
-//   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
+//   copied: 2026-11-08 (Fractal spec 3.1 and 3.4; decisions NR1, NR5)
 //   state:  unchanged: below this header the file is byte for byte the source
 // The C API's games (t5d/capi.h, stage E3): made from a record, from 5DFEN and
 // from a variant; replayed, moved, submitted; expanded - every array the C API

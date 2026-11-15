@@ -1,4 +1,4 @@
-// Chronos - tools/relhist/chronos_relhist.cpp
+// Fractal - tools/relhist/fractal_relhist.cpp
 //
 // Phase 0 measurement tool (docs/SPEC.md 7.3, 7.4, 14.1): the raw histograms G0
 // cuts the nine displacement classes of the attack-relation inputs and the six
@@ -6,14 +6,14 @@
 // engine-derived reachability table for trimming impossible feature
 // combinations. It writes raw counts only; the analysis is done afterwards.
 //
-// New code written for Chronos. It calls the rules engine copied from
+// New code written for Fractal. It calls the rules engine copied from
 // Temporal-5D (engine/, namespace t5d) through its public headers and
 // implements no rule of its own: every move, capture and defence below is the
 // engine's movegen output (P2). No evaluation of any kind.
 //
 // Usage (either mode, or both in one run):
-//   chronos-relhist --records DIR [--games FILE] [--records-out FILE] [--out FILE]
-//   chronos-relhist --probe FILE
+//   fractal-relhist --records DIR [--games FILE] [--records-out FILE] [--out FILE]
+//   fractal-relhist --probe FILE
 //
 //   --records DIR       the converted t0database (python -I data/t0database/to_5dpgn.py DIR):
 //                       every *.5dpgn in DIR, in name order; GameNum = the number in
@@ -677,7 +677,7 @@ int run_records(const Options& opt) {
       if (e.is_regular_file() && e.path().extension() == ".5dpgn") files.push_back(e.path());
     }
   } catch (const std::exception& e) {
-    std::fprintf(stderr, "chronos-relhist: cannot list %s: %s\n", opt.records.c_str(), e.what());
+    std::fprintf(stderr, "fractal-relhist: cannot list %s: %s\n", opt.records.c_str(), e.what());
     return 2;
   }
   std::sort(files.begin(), files.end(),
@@ -685,7 +685,7 @@ int run_records(const Options& opt) {
               return a.filename().string() < b.filename().string();
             });
   if (files.empty()) {
-    std::fprintf(stderr, "chronos-relhist: no .5dpgn records in %s\n", opt.records.c_str());
+    std::fprintf(stderr, "fractal-relhist: no .5dpgn records in %s\n", opt.records.c_str());
     return 2;
   }
 
@@ -694,7 +694,7 @@ int run_records(const Options& opt) {
     std::set<int> g;
     std::string error;
     if (!read_games(opt.games, g, error)) {
-      std::fprintf(stderr, "chronos-relhist: %s\n", error.c_str());
+      std::fprintf(stderr, "fractal-relhist: %s\n", error.c_str());
       return 2;
     }
     games = std::move(g);
@@ -808,7 +808,7 @@ int run_records(const Options& opt) {
       std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
 
   if (!opt.records_out.empty() && !write_file(opt.records_out, tsv)) {
-    std::fprintf(stderr, "chronos-relhist: cannot write %s\n", opt.records_out.c_str());
+    std::fprintf(stderr, "fractal-relhist: cannot write %s\n", opt.records_out.c_str());
     return 2;
   }
 
@@ -818,7 +818,7 @@ int run_records(const Options& opt) {
 
     j.key("meta");
     j.open_object();
-    j.kv("tool", "chronos-relhist --records (tools/relhist/chronos_relhist.cpp)");
+    j.kv("tool", "fractal-relhist --records (tools/relhist/fractal_relhist.cpp)");
     j.kv("engine", "Temporal-5D rules engine copied at c8a9c49 (engine/, namespace t5d)");
     j.key("options");
     j.open_object();
@@ -1000,7 +1000,7 @@ int run_records(const Options& opt) {
 
     j.close_object();
     if (!write_file(opt.out, j.text())) {
-      std::fprintf(stderr, "chronos-relhist: cannot write %s\n", opt.out.c_str());
+      std::fprintf(stderr, "fractal-relhist: cannot write %s\n", opt.out.c_str());
       return 2;
     }
   }
@@ -1309,7 +1309,7 @@ int run_probe(const Options& opt) {
   j.open_object();
   j.key("meta");
   j.open_object();
-  j.kv("tool", "chronos-relhist --probe (tools/relhist/chronos_relhist.cpp)");
+  j.kv("tool", "fractal-relhist --probe (tools/relhist/fractal_relhist.cpp)");
   j.kv("engine", "Temporal-5D rules engine copied at c8a9c49 (engine/, namespace t5d)");
   j.kv("rules", "RuleOptions{} (the defaults; promotion set {Queen})");
   j.kv("same_board_setup",
@@ -1441,7 +1441,7 @@ int run_probe(const Options& opt) {
   j.close_object();
 
   if (!write_file(opt.probe, j.text())) {
-    std::fprintf(stderr, "chronos-relhist: cannot write %s\n", opt.probe.c_str());
+    std::fprintf(stderr, "fractal-relhist: cannot write %s\n", opt.probe.c_str());
     return 2;
   }
 
@@ -1475,9 +1475,9 @@ int run_probe(const Options& opt) {
 
 void usage() {
   std::fprintf(stderr,
-               "usage: chronos-relhist --records DIR [--games FILE] [--records-out FILE] "
+               "usage: fractal-relhist --records DIR [--games FILE] [--records-out FILE] "
                "[--out FILE]\n"
-               "       chronos-relhist --probe FILE\n"
+               "       fractal-relhist --probe FILE\n"
                "(both modes may be given in one run)\n");
 }
 
@@ -1519,7 +1519,7 @@ int main(int argc, char** argv) {
     return 2;
   }
   if (opt.records.empty() && (!opt.games.empty() || !opt.records_out.empty() || !opt.out.empty())) {
-    std::fprintf(stderr, "chronos-relhist: --games, --records-out and --out need --records\n");
+    std::fprintf(stderr, "fractal-relhist: --games, --records-out and --out need --records\n");
     return 2;
   }
   try {
@@ -1528,7 +1528,7 @@ int main(int argc, char** argv) {
     if (rc == 0 && !opt.records.empty()) rc = run_records(opt);
     return rc;
   } catch (const std::exception& e) {
-    std::fprintf(stderr, "chronos-relhist: %s\n", e.what());
+    std::fprintf(stderr, "fractal-relhist: %s\n", e.what());
     return 1;
   }
 }

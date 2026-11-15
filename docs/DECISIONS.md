@@ -14,7 +14,7 @@ Eighteen rows: 17 committed and 1 provisional.
 
 | ID | Decision | Status | Class | Gate | Spec |
 | --- | --- | --- | --- | --- | --- |
-| NS1 | Standalone engine, Chronos: own repo (github.com/Silicon-Spider/Chronos), C++20, CPU only, alpha-beta with an NNUE | Committed | Committed-class | — | §0 |
+| NS1 | Standalone engine, Fractal: own repo (github.com/Silicon-Spider/Fractal), C++20, CPU only, alpha-beta with an NNUE | Committed | Committed-class | — | §0 |
 | NS2 | Completely separate: no build- or run-time dependency on Temporal-5D or Kairos | Committed | Committed-class | — | §0 |
 | NS3 | Borrow Temporal-5D code only where it would be identical in an NNUE engine, after review | Committed | Committed-class | — | §0, §3 |
 | NS4 | Kairos: ideas and test results only, no code | Committed | Retrofittable | — | §0, §13.2 |
@@ -216,7 +216,7 @@ Six predictions, written down before their tests run.
 
 | Date | Was | Now | Why |
 | --- | --- | --- | --- |
-| 2026-11-08 | Everything except CI on the desktop | Test matches on GitHub Actions from Phase 3 and optional self-play shards from Phase 2; training stays on the desktop (NE7, NM13, ND12, NL4) | Chronos is public, so standard runners are free; Kairos runs its matches this way |
+| 2026-11-08 | Everything except CI on the desktop | Test matches on GitHub Actions from Phase 3 and optional self-play shards from Phase 2; training stays on the desktop (NE7, NM13, ND12, NL4) | Fractal is public, so standard runners are free; Kairos runs its matches this way |
 | 2026-11-07 | Defence relations as arm NX4 | In v1 (NI3); NX4 tests dropping them | Stockfish's threat inputs count both; Kairos's most useful counts need defence |
 | 2026-11-07 | Sum pooling only | Sum and max for head roles (NN5) | The worst board decides; Kairos's max-pooling test ran with its worst-board counts present |
 | 2026-11-07 | Board state built when a board is published | Built at first use (NN9) | Many generated boards are never evaluated; Stockfish defers its updates the same way |

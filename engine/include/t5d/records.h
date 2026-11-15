@@ -1,7 +1,7 @@
-// Chronos provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
+// Fractal provenance: copied from Temporal-5D (https://github.com/Silicon-Spider/temporal-5d)
 //   source: engine/include/t5d/records.h
 //   commit: c8a9c490bfde650466609531f8083d69513c6036
-//   copied: 2026-11-08 (Chronos spec 3.1 and 3.4; decisions NR1, NR5)
+//   copied: 2026-11-08 (Fractal spec 3.1 and 3.4; decisions NR1, NR5)
 //   state:  changed: capi's transformer entry points removed (spec 3.4 step 2); see PROVENANCE.md
 /* t5d/records.h - the plain-C records and ids of an expansion (t5d/expand.hpp),
  * shared by the C++ core and the C API (t5d/capi.h): the C API hands out the
